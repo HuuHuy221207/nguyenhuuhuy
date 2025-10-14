@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trắc nghiệm Ngẫu Nhiên Phân Loại (60 Câu Đã Sửa Lỗi)</title>
+    <style>
+        /* CSS cho giao diện */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; }
+        .quiz-container { max-width: 900px; margin: 40px auto; padding: 30px; background-color: white; border-radius: 10px; box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+        h1 { text-align: center; color: #0056b3; border-bottom: 2px solid #0056b3; padding-bottom: 10px; }
+        .controls { text-align: center; margin-bottom: 25px; }
+        .controls button { padding: 12px 25px; font-size: 1.1em; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; }
+        .controls button:hover { background-color: #1e7e34; }
+        .question-card { margin-bottom: 30px; padding: 20px; border-left: 5px solid #007bff; background-color: #f8fafd; border-radius: 5px; }
+        .question-card p { font-weight: bold; margin-top: 0; font-size: 1.1em; }
+        .options-list label { display: block; margin-bottom: 10px; padding: 12px; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; transition: all 0.3s; }
+        .options-list label:hover { background-color: #e0e0e0; }
+        .options-list input[type="radio"] { margin-right: 10px; }
+        .result-message { margin-top: 15px; padding: 12px; border-radius: 5px; font-weight: bold; font-size: 1em; display: none; }
+        .correct { background-color: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
+        .incorrect { background-color: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .explanation { margin-top: 10px; font-size: 0.95em; padding: 8px; border-top: 1px dashed #aaa; display: none; background-color: #fff0f0; border-radius: 5px; }
+        .check-btn { padding: 8px 15px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; transition: background-color 0.3s; }
+        .check-btn:hover { background-color: #0056b3; }
+        .footer-note { text-align: center; font-size: 0.8em; color: #666; margin-top: 40px; }
+        .ma-de { text-align: center; margin-bottom: 15px; font-weight: bold; color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>Tạo Đề Thi Ngẫu Nhiên & Cân Bằng Mức Độ Khó</h1>
+        <div class="controls">
+            <button onclick="generateNewQuiz()">Tạo Mã Đề Mới (20 Câu, Cân bằng mức độ)</button>
+        </div>
+        <div id="ma-de-info" class="ma-de"></div>
+        <div id="quiz-content">
+            </div>
+        <div class="footer-note">
+            *Ngân hàng câu hỏi gồm 60 câu (mở rộng từ nội dung gốc). Mỗi mã đề gồm 20 câu được lấy ngẫu nhiên theo tỷ lệ: Nhận biết (6), Thông hiểu (8), Vận dụng/Vận dụng cao (6).
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.0/dist/confetti.browser.js"></script>
+    <script>
+        // --- 1. NGÂN HÀNG 60 CÂU HỎI (ĐÃ CÂN BẰNG MỨC ĐỘ VÀ CHI TIẾT) ---
+        // Đã mở rộng 60 câu để minh họa tính năng phân lớp và đa dạng
+        const questionBank = [
+            // --- NHẬN BIẾT (20 CÂU) ---
+            { id: 1, level: 'Nhận biết', question: 'Ai là người đầu tiên được biết đến thực hành một thí nghiệm về tâm lý, với mục đích tìm hiểu nguồn gốc của ngôn ngữ?', options: ['Socrates (470 - 399 TCN)', 'Pharaoh Psamtik I (664-610 TCN)', 'Plato (428 - 347 TCN)', 'Aristotle (384 - 322 TCN)'], correct: 'Pharaoh Psamtik I (664-610 TCN)', slide: 'Slide 5, 6', explanation: 'Pharaoh Psamtik I (664-610 TCN) là người đầu tiên thực hành thí nghiệm tâm lý về nguồn gốc ngôn ngữ.' },
+            { id: 2, level: 'Nhận biết', question: 'Định nghĩa về Tâm lý Y học (Medical Psychology) là gì?', options: ['Khoa học nghiên cứu tâm lý người bệnh.', 'Khoa học nghiên cứu tâm lý nhân viên y tế.', 'Khoa học nghiên cứu mối quan hệ thầy thuốc – bệnh nhân.', 'Là khoa học nghiên cứu tâm lý người bệnh, nhân viên y tế, mối quan hệ thầy thuốc – bệnh nhân, nghiên cứu yếu tố tâm lý ảnh hưởng đến căn nguyên xuất hiện và diễn biến các rối loạn tâm lý, tâm thần.'], correct: 'Là khoa học nghiên cứu tâm lý người bệnh, nhân viên y tế, mối quan hệ thầy thuốc – bệnh nhân, nghiên cứu yếu tố tâm lý ảnh hưởng đến căn nguyên xuất hiện và diễn biến các rối loạn tâm lý, tâm thần.', slide: 'Slide 19', explanation: 'Đây là định nghĩa đầy đủ về Tâm lý Y học theo Bộ môn Tâm lý Y học 2022.' },
+            { id: 4, level: 'Nhận biết', question: 'Đâu là một trong các phương pháp nghiên cứu cơ bản trong Tâm lý học và Tâm lý Y học?', options: ['Phương pháp Phân tích sinh học.', 'Phương pháp So sánh tương quan.', 'Phương pháp Trắc nghiệm (test).', 'Phương pháp Điều trị tâm thần.'], correct: 'Phương pháp Trắc nghiệm (test).', slide: 'Slide 32', explanation: 'Phương pháp Trắc nghiệm (test) là một trong 6 phương pháp nghiên cứu được liệt kê.' },
+            { id: 13, level: 'Nhận biết', question: 'Học thuyết nào sau đây KHÔNG được liệt kê là một trường phái tâm lý học lớn trong bài giảng?', options: ['Phân tâm học', 'Học thuyết Nhân văn - Hiện sinh', 'Học thuyết Cấu trúc tâm thức cá nhân', 'Tâm lý học Thể chất'], correct: 'Tâm lý học Thể chất', slide: 'Slide 9', explanation: 'Tâm lý học Thể chất không được liệt kê trong 5 trường phái chính.' },
+            { id: 15, level: 'Nhận biết', question: 'Ivan Petrovich Pavlov đoạt giải Nobel Y học năm 1904 với chủ đề gì?', options: ['Cấu trúc của hệ thần kinh.', 'Sự dẫn truyền thần kinh bởi các chất hóa học.', 'Sinh lý hệ tiêu hóa và các phản xạ có điều kiện.', 'Độ nhạy cảm của giác quan.'], correct: 'Sinh lý hệ tiêu hóa và các phản xạ có điều kiện.', slide: 'Slide 12', explanation: 'Pavlov được vinh danh với chủ đề Sinh lý hệ tiêu hóa và các phản xạ có điều kiện.' },
+            { id: 18, level: 'Nhận biết', question: 'Cấu thành của "nội lực tâm trí" cá nhân theo các Trường phái Tâm lý học Cổ điển bao gồm những yếu tố nào?', options: ['Quy luật trường và quy luật hiện tượng.', 'Triết học, xã hội học và chức năng sinh học của não bộ.', '(Động lực bản năng – Chướng ngại) + Nhu cầu cơ bản + Chức năng sinh học của não bộ.', 'Nhận thức, Cảm xúc, Thái độ, Hành vi.'], correct: '(Động lực bản năng – Chướng ngại) + Nhu cầu cơ bản + Chức năng sinh học của não bộ.', slide: 'Slide 17', explanation: 'Đây là mô hình cấu thành tâm lý theo quan điểm cổ điển.' },
+            { id: 20, level: 'Nhận biết', question: 'Trong từ "Iatrogenia" (Bệnh Y sinh), "Genesis" có nghĩa là gì?', options: ['Thầy thuốc', 'Bệnh tật', 'Gây ra', 'Hậu quả'], correct: 'Gây ra', slide: 'Slide 21', explanation: 'Iatros: Thầy thuốc. Genesis: gây ra.' },
+            { id: 21, level: 'Nhận biết', question: 'Hai nhóm nguyên nhân chính gây ra Bệnh Y sinh là gì?', options: ['Patient-induced và Family-induced.', 'Doctor-induced và Patient-induced.', 'Doctor-induced và Hospital-induced.', 'System-induced và Administration-induced.'], correct: 'Doctor-induced và Hospital-induced.', slide: 'Slide 22', explanation: 'Hai nhóm nguyên nhân chính là Doctor-induced và Hospital-induced.' },
+            { id: 26, level: 'Nhận biết', question: 'Đối tượng nghiên cứu của Tâm lý học (Psychology) là gì?', options: ['Chỉ nghiên cứu các trạng thái tâm lý liên quan đến sức khỏe.', 'Nghiên cứu các hoạt động tâm lý ở con người (các quá trình, trạng thái, thuộc tính, quy luật sinh học, xã hội, tự nhiên).', 'Chỉ nghiên cứu người bệnh.', 'Nghiên cứu mối quan hệ thầy thuốc – bệnh nhân.'], correct: 'Nghiên cứu các hoạt động tâm lý ở con người (các quá trình, trạng thái, thuộc tính, quy luật sinh học, xã hội, tự nhiên).', slide: 'Slide 29', explanation: 'Đây là định nghĩa rộng, chung nhất về đối tượng của Tâm lý học.' },
+            { id: 28, level: 'Nhận biết', question: 'Phương pháp nghiên cứu nào là một phép thử để “đo lường tâm lý, đã được chuẩn hóa trên một số lượng người đủ là đại diện tiêu biểu”?', options: ['Phương pháp Trắc nghiệm (Test)', 'Phương pháp Điều tra', 'Phương pháp Phân tích sản phẩm', 'Phương pháp Thực nghiệm'], correct: 'Phương pháp Trắc nghiệm (Test)', slide: 'Slide 37', explanation: 'Đây là định nghĩa về Phương pháp Trắc nghiệm.' },
+            { id: 31, level: 'Nhận biết', question: 'Theo Socrates (470 - 399 TCN), từ “Psyche” được sử dụng như trung tâm của yếu tố nào?', options: ['Cảm xúc và Hành vi', 'Trí tuệ và Nhân cách', 'Sinh lý và Cơ thể', 'Tâm linh và Tôn giáo'], correct: 'Trí tuệ và Nhân cách', slide: 'Slide 4', explanation: 'Socrates dùng từ "Psyche" như trung tâm của trí tuệ và nhân cách.' },
+            { id: 35, level: 'Nhận biết', question: 'Trường phái Tâm lý học nào đề cập đến "Tâm lý học phân tích" (Analytic Psychology) bên cạnh Phân tâm học (Psychoanalysis)?', options: ['Học thuyết Cấu trúc tâm thức cá nhân', 'Các học thuyết Hành vi', 'Phân tâm học & Tâm lý học phân tích', 'Các học thuyết tâm lý học phát triển xã hội'], correct: 'Phân tâm học & Tâm lý học phân tích', slide: 'Slide 9', explanation: 'Phân tâm học và Tâm lý học phân tích được nhóm lại với nhau.' },
+            { id: 36, level: 'Nhận biết', question: 'Phương pháp nghiên cứu nào đòi hỏi nhà nghiên cứu phân tích sản phẩm và điều kiện làm ra sản phẩm để tìm hiểu đặc điểm tâm lý của người làm ra sản phẩm?', options: ['Phương pháp Trò chuyện', 'Phương pháp Trắc nghiệm', 'Phương pháp Điều tra', 'Phương pháp Phân tích sản phẩm của hoạt động'], correct: 'Phương pháp Phân tích sản phẩm của hoạt động', slide: 'Slide 38', explanation: 'Đây là định nghĩa của phương pháp Phân tích sản phẩm.' },
+            { id: 38, level: 'Nhận biết', question: 'J.Mc.Keen Cattell được nhắc đến là người đặt nền móng ban đầu cho hoạt động nào của Tâm lý học, qua thử nghiệm phản xạ để đo lường trí tuệ?', options: ['Phương pháp Quan sát', 'Phương pháp Trò chuyện', 'Phương pháp Phân tích sản phẩm', 'Trắc nghiệm tâm lý'], correct: 'Trắc nghiệm tâm lý', slide: 'Slide 13', explanation: 'Cattell là một trong những người đặt nền móng ban đầu cho trắc nghiệm tâm lý.' },
+            { id: 41, level: 'Nhận biết', question: 'Phật giáo, Đạo giáo và Nho giáo nổi bật trong giai đoạn phát triển tâm lý học nào?', options: ['Hiện đại', 'Cổ điển phương Tây', 'Giai đoạn giữa thế kỷ 19', 'Giai đoạn tâm linh và giáo thuyết tôn giáo'], correct: 'Giai đoạn tâm linh và giáo thuyết tôn giáo', slide: 'Slide 8', explanation: 'Các tôn giáo/triết học này nổi bật trong giai đoạn kéo dài gần 19 thế kỷ, khi tâm lý con người có xu hướng tâm linh và giáo thuyết.' },
+            { id: 42, level: 'Nhận biết', question: 'Mục tiêu chính của thí nghiệm tâm lý đầu tiên do Pharaoh Psamtik I thực hiện là gì?', options: ['Tìm hiểu về hành vi xã hội.', 'Xác định khả năng nhận thức của trẻ sơ sinh.', 'Xác định ngôn ngữ cổ xưa nhất.', 'Tìm hiểu về bản chất của giấc mơ.'], correct: 'Xác định ngôn ngữ cổ xưa nhất.', slide: 'Slide 6', explanation: 'Mục đích thí nghiệm là xác định ngôn ngữ cổ xưa nhất bằng cách quan sát từ đầu tiên mà trẻ sơ sinh phát ra.' },
+            { id: 43, level: 'Nhận biết', question: 'Phương pháp nghiên cứu nào có ưu điểm là thu được tài liệu phong phú, thực tiễn và sinh động?', options: ['Phương pháp Thực nghiệm', 'Phương pháp Trắc nghiệm', 'Phương pháp Quan sát', 'Phương pháp Điều tra'], correct: 'Phương pháp Quan sát', slide: 'Slide 33', explanation: 'Ưu điểm của phương pháp quan sát là đơn giản về kỹ thuật, thu được tài liệu phong phú, thực tiễn sinh động.' },
+            { id: 44, level: 'Nhận biết', question: 'Hệ quả nào sau đây KHÔNG phải là hệ quả về mặt tâm lý của Bệnh Y sinh?', options: ['Rối loạn trầm cảm', 'Mất lòng tin nơi bác sĩ', 'Rối loạn nghi bệnh', 'Suy nhược cơ thể'], correct: 'Suy nhược cơ thể', slide: 'Slide 26', explanation: 'Suy nhược cơ thể là hệ quả về mặt cơ thể.' },
+            { id: 45, level: 'Nhận biết', question: 'Nguyên nhân nào sau đây thuộc nhóm Doctor-induced (nguyên nhân gây ra từ bác sĩ/NVYT)?', options: ['Chất lượng dịch vụ Y tế kém', 'Quy trình nhập viện rườm rà', 'Thiếu kiến thức về tâm lý bệnh nhân', 'Khu vực cách ly không tốt gây lây nhiễm chéo'], correct: 'Thiếu kiến thức về tâm lý bệnh nhân', slide: 'Slide 23', explanation: 'Thiếu kiến thức về tâm lý bệnh nhân là một trong các nguyên nhân thuộc nhóm Doctor-induced.' },
+            { id: 46, level: 'Nhận biết', question: 'Nguyên nhân nào sau đây thuộc nhóm Hospital-induced (nguyên nhân gây ra từ hệ thống y tế)?', options: ['Chẩn đoán sai', 'Tác dụng phụ của điều trị', 'Sơ suất hành chánh (gõ nhầm đơn thuốc)', 'Cách tương tác của NVYT với bệnh nhân'], correct: 'Sơ suất hành chánh (gõ nhầm đơn thuốc)', slide: 'Slide 24', explanation: 'Sơ suất hành chính là một nguyên nhân thuộc nhóm Hospital-induced.' },
+            
+            // --- THÔNG HIỂU (20 CÂU) ---
+            { id: 3, level: 'Thông hiểu', question: 'Theo định nghĩa của Merriam Webster, Bệnh Y sinh (Iatrogenia) là hậu quả không mong muốn gây ra bởi những đối tượng nào?', options: ['Chỉ từ Bác sĩ và Nhà phẫu thuật.', 'Chỉ từ phương pháp điều trị hoặc chẩn đoán.', 'Bác sĩ, nhà phẫu thuật, phương pháp điều trị hoặc chẩn đoán.', 'Sự nghèo đói và các yếu tố văn hóa xã hội.'], correct: 'Bác sĩ, nhà phẫu thuật, phương pháp điều trị hoặc chẩn đoán.', slide: 'Slide 21', explanation: 'Định nghĩa của Merriam Webster bao gồm bác sĩ, nhà phẫu thuật, phương pháp điều trị hoặc chẩn đoán.' },
+            { id: 5, level: 'Thông hiểu', question: 'Đặc điểm nào sau đây thể hiện sự khác biệt giữa phương pháp nghiên cứu của Tâm lý Y học so với Tâm lý học nói chung?', options: ['Tâm lý Y học không sử dụng phương pháp thực nghiệm.', 'Quá trình thu thập và phân tích số liệu dựa trên các dữ liệu về sinh học, công cụ thích ứng với thực nghiệm lâm sàng và cận lâm sàng.', 'Tâm lý Y học chỉ tập trung vào phương pháp quan sát và trò chuyện.', 'Tâm lý Y học chỉ nghiên cứu người bệnh.'], correct: 'Quá trình thu thập và phân tích số liệu dựa trên các dữ liệu về sinh học, công cụ thích ứng với thực nghiệm lâm sàng và cận lâm sàng.', slide: 'Slide 31', explanation: 'Điểm khác biệt nằm ở cơ sở dữ liệu (sinh học) và tính thực nghiệm (lâm sàng/cận lâm sàng).' },
+            { id: 7, level: 'Thông hiểu', question: 'Một điều dưỡng viên sử dụng lời nói thiếu tôn trọng, khiến bệnh nhân lo lắng, làm bệnh tiến triển xấu. Hiện tượng này thuộc nhóm nguyên nhân nào gây ra Bệnh Y sinh?', options: ['Hospital-induced: Sơ suất hành chính.', 'Doctor-induced: Cách tương tác của NVYT với bệnh nhân.', 'Hospital-induced: Chất lượng dịch vụ Y tế.', 'Doctor-induced: Thiếu chuyên môn.'], correct: 'Doctor-induced: Cách tương tác của NVYT với bệnh nhân.', slide: 'Slide 23', explanation: 'Thái độ, lời nói thuộc về yếu tố tương tác trực tiếp từ nhân viên y tế (Doctor-induced).' },
+            { id: 11, level: 'Thông hiểu', question: 'Plato (428 - 347 TCN) cho rằng việc học chỉ là vấn đề mở khóa những kiến thức có sẵn trong tâm trí. Quan điểm này có nguồn gốc từ lĩnh vực nào?', options: ['Văn học', 'Triết học', 'Y học', 'Tôn giáo'], correct: 'Triết học', slide: 'Slide 4', explanation: 'Tư tưởng của Plato về tâm trí con người và kiến thức có sẵn bắt nguồn từ triết học.' },
+            { id: 12, level: 'Thông hiểu', question: 'Quan điểm chủ đạo của các trường phái tâm lý học (cổ điển và hiện đại) được tóm tắt là gì?', options: ['Các học thuyết có quan điểm đối lập và mâu thuẫn lẫn nhau.', 'Hầu hết các học thuyết đều không mâu thuẫn lẫn nhau mà là sự kế thừa hoặc khác biệt do các cách tiếp cận khác nhau.', 'Các học thuyết chỉ tập trung khám phá cấu trúc nhân cách/chủ thể theo một lập trường lý luận duy nhất.', 'Các học thuyết đều bác bỏ lập trường, quan điểm của các học thuyết trước đó.'], correct: 'Hầu hết các học thuyết đều không mâu thuẫn lẫn nhau mà là sự kế thừa hoặc khác biệt do các cách tiếp cận khác nhau.', slide: 'Slide 10', explanation: 'Các học thuyết không đối lập mà là sự kế thừa hoặc khác biệt do cách tiếp cận.' },
+            { id: 14, level: 'Thông hiểu', question: 'Sự chuyển đổi trọng tâm cấu trúc chủ thể/nhân cách từ nội tâm cá nhân thành các yếu tố xã hội là đặc điểm của sự chuyển đổi giữa những học thuyết nào?', options: ['Tâm lý học hiện đại sang Tâm lý học cổ điển.', 'Tâm lý học cổ điển sang Tâm lý học hiện đại.', 'Tâm lý học phân tích sang Phân tâm học.', 'Tâm lý học xã hội sang Tâm lý học cộng đồng.'], correct: 'Tâm lý học cổ điển sang Tâm lý học hiện đại.', slide: 'Slide 11', explanation: 'Sự chuyển đổi trọng tâm sang yếu tố xã hội là đặc trưng của tâm lý học hiện đại.' },
+            { id: 16, level: 'Thông hiểu', question: 'Nghiên cứu về sự dẫn truyền thần kinh bởi các chất hóa học của Henry Hallett Dale và Otto Loewi giúp cải thiện điều gì trong trị liệu tâm lý?', options: ['Tăng cường khả năng nhận thức và trí tuệ.', 'Đánh giá và trị liệu liên quan đến những rối loạn về khí sắc, các rối loạn cưỡng chế, ám ảnh.', 'Cải thiện kỹ năng vận động.', 'Giải thích các học thuyết cổ điển.'], correct: 'Đánh giá và trị liệu liên quan đến những rối loạn về khí sắc, các rối loạn cưỡng chế, ám ảnh.', slide: 'Slide 14', explanation: 'Nghiên cứu này có ứng dụng đột phá trong việc trị liệu các rối loạn khí sắc, cưỡng chế, ám ảnh.' },
+            { id: 19, level: 'Thông hiểu', question: '"Bệnh Y sinh được hiểu là những rối loạn diễn tiến nhanh, xấu đi hoặc gây ra bởi thái độ, hoạt động khám bệnh, ý kiến và điều trị của bác sĩ" là định nghĩa của tổ chức nào?', options: ['Merriam Webster', 'Trường Đại học Y khoa Phạm Ngọc Thạch', 'APA (American Psychological Association)', 'WHO'], correct: 'APA (American Psychological Association)', slide: 'Slide 21', explanation: 'Đây là định nghĩa của APA về Bệnh Y sinh.' },
+            { id: 22, level: 'Thông hiểu', question: 'Nguyên nhân "Cứng nhắc trong việc áp dụng phác đồ điều trị mà không tìm hiểu về đặc điểm, tiền sử bệnh nhân" gây ra Bệnh Y sinh thuộc nhóm nào?', options: ['Hospital-induced: Quy trình, kỹ thuật bị lỗi.', 'Hospital-induced: Sơ suất hành chính.', 'Doctor-induced: Thiếu chuyên môn.', 'Doctor-induced: Thiếu kiến thức về tâm lý.'], correct: 'Doctor-induced: Thiếu chuyên môn.', slide: 'Slide 23', explanation: 'Cứng nhắc trong áp dụng phác đồ thuộc về phạm vi chuyên môn của bác sĩ (Doctor-induced).' },
+            { id: 23, level: 'Thông hiểu', question: 'Nguyên nhân "Sơ suất hành chánh: Tên người bệnh sai; gõ nhầm, sai đơn thuốc" gây ra Bệnh Y sinh thuộc nhóm nào?', options: ['Doctor-induced: Thiếu chuyên môn.', 'Doctor-induced: Cách tương tác.', 'Hospital-induced: Sơ suất hành chánh.', 'Hospital-induced: Khu vực cách ly không tốt.'], correct: 'Hospital-induced: Sơ suất hành chánh.', slide: 'Slide 24', explanation: 'Sơ suất hành chính, gõ nhầm thuốc thuộc nhóm Hospital-induced (liên quan đến hệ thống y tế).' },
+            { id: 27, level: 'Thông hiểu', question: 'Nhiệm vụ nào sau đây KHÔNG phải là nhiệm vụ của Tâm lý Y học?', options: ['Nhận diện và can thiệp các vấn đề sức khỏe ở người lành mạnh.', 'Huấn luyện NVYT có kiến thức và thực hành kỹ năng tâm lý.', 'Nghiên cứu các hiện tượng về các hoạt động tâm lý con người trong đời sống (ngoại trừ y học).', 'Nhận diện và tham vấn, trị liệu các vấn đề tâm lý ảnh hưởng đến sức khỏe cá nhân.'], correct: 'Nghiên cứu các hiện tượng về các hoạt động tâm lý con người trong đời sống (ngoại trừ y học).', slide: 'Slide 30', explanation: 'Nhiệm vụ nghiên cứu ngoài lĩnh vực y học thuộc về Tâm lý học chung.' },
+            { id: 29, level: 'Thông hiểu', question: 'Hạn chế lớn nhất của Phương pháp Quan sát là gì?', options: ['Khó ghi chép tài liệu một cách khách quan.', 'Dữ liệu thu được không sinh động.', 'Không thể can thiệp vào diễn biến tự nhiên của hiện tượng, tốn nhiều thời gian nghiên cứu.', 'Chỉ áp dụng được trong phòng thí nghiệm.'], correct: 'Không thể can thiệp vào diễn biến tự nhiên của hiện tượng, tốn nhiều thời gian nghiên cứu.', slide: 'Slide 33', explanation: 'Hạn chế của quan sát là bị động và tốn thời gian.' },
+            { id: 30, level: 'Thông hiểu', question: 'Phương pháp Thực nghiệm Tự nhiên khác với Thực nghiệm trong Phòng thí nghiệm ở điểm nào?', options: ['Thực nghiệm tự nhiên tiến hành trong điều kiện bình thường của cuộc sống, còn thực nghiệm trong phòng thí nghiệm tiến hành trong điều kiện khống chế nghiêm ngặt.', 'Thực nghiệm tự nhiên không cần khống chế ảnh hưởng bên ngoài, còn phòng thí nghiệm thì không.', 'Thực nghiệm tự nhiên cho kết quả không chính xác bằng.', 'Thực nghiệm tự nhiên tốn ít thời gian hơn.'], correct: 'Thực nghiệm tự nhiên tiến hành trong điều kiện bình thường của cuộc sống, còn thực nghiệm trong phòng thí nghiệm tiến hành trong điều kiện khống chế nghiêm ngặt.', slide: 'Slide 34', explanation: 'Sự khác biệt nằm ở mức độ khống chế điều kiện nghiên cứu.' },
+            { id: 32, level: 'Thông hiểu', question: 'Việc thiết kế bệnh viện phải đảm bảo cảnh quan, môi trường xanh sạch, thoáng thuộc vai trò nào của Tâm lý Y học đối với sức khỏe?', options: ['Trị liệu các chứng bệnh tâm thần.', 'Phòng ngừa lây nhiễm chéo.', 'Nâng cao chất lượng dịch vụ Y tế.', 'Ứng dụng nguyên tắc của tâm lý học vào hệ thống y tế nhằm nâng cao sức khỏe tinh thần.'], correct: 'Ứng dụng nguyên tắc của tâm lý học vào hệ thống y tế nhằm nâng cao sức khỏe tinh thần.', slide: 'Slide 41', explanation: 'Việc thiết kế cơ sở vật chất theo nguyên tắc tâm lý là để cải thiện sức khỏe tinh thần.' },
+            { id: 33, level: 'Thông hiểu', question: 'Lý thuyết nào đã khởi đầu cho hệ học thuyết mới về tâm lý học, đồng thời được các nhà Khoa học thần kinh dùng để giải thích phản xạ tư duy, cảm xúc, hành vi của con người?', options: ['Học thuyết Phân tâm học', 'Lý thuyết phản xạ', 'Lý thuyết Nhân văn', 'Lý thuyết Cấu trúc tâm thức'], correct: 'Lý thuyết phản xạ', slide: 'Slide 16', explanation: 'Khoa học thần kinh với lý thuyết phản xạ đã khởi đầu cho hệ học thuyết mới.' },
+            { id: 37, level: 'Thông hiểu', question: 'Theo quan điểm Tâm lý Y học, một bệnh lý cơ thể sẽ ảnh hưởng thế nào đến sức khỏe tinh thần của cá nhân?', options: ['Không có ảnh hưởng vì sức khỏe tinh thần độc lập.', 'Bệnh lý cơ thể cũng sẽ ảnh hưởng đến sức khỏe tinh thần của cá nhân đó.', 'Bệnh lý cơ thể sẽ luôn cải thiện sức khỏe tinh thần.', 'Ảnh hưởng chỉ xảy ra khi bệnh nhân có rối loạn tâm thần trước đó.'], correct: 'Bệnh lý cơ thể cũng sẽ ảnh hưởng đến sức khỏe tinh thần của cá nhân đó.', slide: 'Slide 15', explanation: 'Bệnh lý cơ thể và tinh thần có mối tương quan.' },
+            { id: 39, level: 'Thông hiểu', question: 'Yếu tố văn hóa đặc thù của chủng tộc, xã hội (tôn giáo, chính trị) liên đới đến sự phá hủy sự vận hành truyền thống của tâm lý người bệnh được xếp vào nhóm yếu tố nào?', options: ['Doctor-induced', 'Hospital-induced', 'Yếu tố xã hội và văn hóa (Yếu tố duy trì)', 'Hệ quả tâm lý'], correct: 'Yếu tố xã hội và văn hóa (Yếu tố duy trì)', slide: 'Slide 25', explanation: 'Yếu tố xã hội và văn hóa là Yếu tố tác động gián tiếp (Yếu tố duy trì).' },
+            { id: 47, level: 'Thông hiểu', question: 'Tại sao Thái độ đối với bệnh tật của người bệnh ảnh hưởng trực tiếp đến quá trình điều trị?', options: ['Vì thái độ giúp bác sĩ đưa ra quyết định.', 'Vì thái độ ảnh hưởng đến chi phí điều trị.', 'Vì thái độ ảnh hưởng trực tiếp đến khả năng huy động sinh lực của bản thân người bệnh.', 'Vì thái độ là yếu tố duy nhất quyết định sự phục hồi.'], correct: 'Vì thái độ ảnh hưởng trực tiếp đến khả năng huy động sinh lực của bản thân người bệnh.', slide: 'Slide 16', explanation: 'Thái độ tích cực giúp huy động sinh lực của bản thân người bệnh trong phòng và chữa bệnh.' },
+            { id: 48, level: 'Thông hiểu', question: 'Việc nghiên cứu và trị liệu các rối loạn khí sắc, cưỡng chế, ám ảnh được cải thiện nhờ khám phá nào?', options: ['Học thuyết Phân tâm học', 'Sự dẫn truyền thần kinh bởi các chất hóa học', 'Lý thuyết Phản xạ có điều kiện', 'Học thuyết Nhân văn'], correct: 'Sự dẫn truyền thần kinh bởi các chất hóa học', slide: 'Slide 14', explanation: 'Nghiên cứu của Dale và Loewi về dẫn truyền thần kinh giúp cải thiện trị liệu các rối loạn này.' },
+            { id: 49, level: 'Thông hiểu', question: 'Phương pháp nghiên cứu nào có hạn chế là tốn nhiều thời gian và không thể can thiệp vào diễn biến tự nhiên của hiện tượng?', options: ['Phương pháp Thực nghiệm', 'Phương pháp Quan sát', 'Phương pháp Trắc nghiệm', 'Phương pháp Điều tra'], correct: 'Phương pháp Quan sát', slide: 'Slide 33', explanation: 'Đây là hai hạn chế chính của Phương pháp Quan sát.' },
+            { id: 50, level: 'Thông hiểu', question: 'Tâm lý lành mạnh đi đôi với cơ thể khỏe mạnh và giúp cơ thể bệnh lý phục hồi nhanh hơn. Đây là bằng chứng cho điều gì?', options: ['Sức khỏe tinh thần quan trọng hơn thể chất.', 'Sự gắn kết giữa tâm lý học và y học.', 'Yếu tố sinh học là duy nhất.', 'Tâm lý học hiện đại đã bác bỏ các học thuyết cũ.'], correct: 'Sự gắn kết giữa tâm lý học và y học.', slide: 'Slide 15', explanation: 'Sự gắn kết này thể hiện tính đủ đầy của chất lượng cuộc sống qua sự tương quan giữa sức khỏe cơ thể và tinh thần.' },
+
+            // --- VẬN DỤNG/VẬN DỤNG CAO (20 CÂU) ---
+            { id: 6, level: 'Vận dụng', question: 'Quan điểm chủ đạo của các trường phái Tâm lý học hiện đại được tóm tắt là sự diễn giải các hoạt động tâm lý ở cá thể dựa trên sự tương tác của những yếu tố nào?', options: ['Động lực bản năng, Nhu cầu cơ bản, Chức năng sinh học của não bộ.', 'Quy luật trường (Field law), quy luật hiện tượng (phenomenal law), triết học, xã hội học.', 'Sự khám phá của ngành Khoa học thần kinh.', 'Ảnh hưởng của Tôn giáo, Triết học, Văn học.'], correct: 'Quy luật trường (Field law), quy luật hiện tượng (phenomenal law), triết học, xã hội học.', slide: 'Slide 18', explanation: 'Các học thuyết hiện đại diễn giải hoạt động tâm lý dựa trên sự tương tác của quy luật trường, quy luật hiện tượng, triết học, xã hội học.' },
+            { id: 8, level: 'Vận dụng cao', question: 'Theo quan điểm Tâm lý Y học, một người bệnh bị bệnh cơ thể kéo dài có biểu hiện thêm rối loạn lo âu và mất ngủ. Việc can thiệp tâm lý trong trường hợp này mang lại ý nghĩa nào sau đây?', options: ['Cải thiện sức khỏe tinh thần, qua đó giúp cơ thể bệnh lý có sự phục hồi nhanh hơn.', 'Chứng minh sức khỏe tinh thần độc lập hoàn toàn với sức khỏe cơ thể.', 'Tập trung điều trị dứt điểm các rối loạn tâm lý trước, sau đó mới chữa bệnh cơ thể.', 'Chỉ cần điều trị bằng thuốc men mà không cần tham vấn tâm lý.'], correct: 'Cải thiện sức khỏe tinh thần, qua đó giúp cơ thể bệnh lý có sự phục hồi nhanh hơn.', slide: 'Slide 15', explanation: 'Tâm lý lành mạnh giúp cơ thể bệnh lý phục hồi nhanh hơn, thể hiện sự gắn kết giữa tinh thần và thể chất.' },
+            { id: 9, level: 'Vận dụng', question: 'Một nhà tâm lý học thực hiện nghiên cứu bằng cách trò chuyện với một nhóm bệnh nhân, ghi chép cẩn thận các câu trả lời. Phương pháp nghiên cứu này là gì và cần lưu ý điều gì quan trọng nhất?', options: ['Phương pháp Quan sát; cần ghi chép khách quan trung thực.', 'Phương pháp Thực nghiệm; cần khống chế nghiêm ngặt các ảnh hưởng bên ngoài.', 'Phương pháp Trò chuyện (đàm thoại); cần chủ định điều khiển câu chuyện, không để bị dẫn dắt.', 'Phương pháp Điều tra; cần sử dụng kết hợp câu hỏi đóng và câu hỏi mở.'], correct: 'Phương pháp Trò chuyện (đàm thoại); cần chủ định điều khiển câu chuyện, không để bị dẫn dắt.', slide: 'Slide 35', explanation: 'Đây là phương pháp Trò chuyện. Lưu ý quan trọng là phải chủ động điều khiển cuộc trò chuyện.' },
+            { id: 10, level: 'Vận dụng cao', question: 'Việc các chương trình đào tạo NVYT chú trọng chuyên môn mà bỏ quên tâm lý học, triết học có thể dẫn đến hệ quả tâm lý nào sau đây trên người bệnh?', options: ['Người bệnh có xu hướng phát triển Rối loạn nghi bệnh.', 'Người bệnh phát triển Rối loạn tâm thể.', 'Người bệnh có cảm giác kiệt quệ tinh thần do chi phí y tế.', 'Người bệnh có nguy cơ cao bị mất lòng tin nơi bác sĩ và hệ thống y tế.'], correct: 'Người bệnh có nguy cơ cao bị mất lòng tin nơi bác sĩ và hệ thống y tế.', slide: 'Slide 25, 26', explanation: 'Triết lý đào tạo chỉ tập trung vào bệnh tật là Yếu tố duy trì Bệnh Y sinh. Hệ quả tâm lý là Mất lòng tin nơi bác sĩ và hệ thống y tế.' },
+            { id: 17, level: 'Vận dụng', question: 'Theo quan điểm Tâm lý Y học, tại sao thái độ đối với bệnh tật của người bệnh ảnh hưởng trực tiếp đến quá trình điều trị?', options: ['Vì thái độ quyết định phác đồ điều trị của bác sĩ.', 'Vì thái độ giúp người bệnh chấp nhận sự thật.', 'Vì thái độ ảnh hưởng trực tiếp đến khả năng huy động sinh lực của bản thân người bệnh trong phòng và chữa bệnh.', 'Vì thái độ giúp cải thiện mối quan hệ thầy thuốc - bệnh nhân.'], correct: 'Vì thái độ ảnh hưởng trực tiếp đến khả năng huy động sinh lực của bản thân người bệnh trong phòng và chữa bệnh.', slide: 'Slide 16', explanation: 'Thái độ tích cực giúp huy động sinh lực cơ thể, là cầu nối giữa tâm lý và cơ chế sinh học.' },
+            { id: 24, level: 'Vận dụng', question: '"Sự nghèo đói y sinh" (Tình trạng bần cùng do chi phí y tế) được xếp vào nhóm yếu tố nào của Bệnh Y sinh?', options: ['Nguyên nhân trực tiếp (Doctor-induced)', 'Nguyên nhân trực tiếp (Hospital-induced)', 'Các yếu tố tác động gián tiếp (Yếu tố duy trì)', 'Hệ quả về mặt cơ thể'], correct: 'Các yếu tố tác động gián tiếp (Yếu tố duy trì)', slide: 'Slide 25, 27', explanation: 'Sự nghèo đói y sinh là một trong các Yếu tố duy trì Bệnh Y sinh.' },
+            { id: 25, level: 'Vận dụng', question: 'Stress kéo dài, suy nhược cơ thể, và rối loạn trầm cảm là các hệ quả của Bệnh Y sinh theo những mặt nào?', options: ['Cơ thể và Xã hội', 'Chỉ về Tâm lý', 'Cơ thể và Tâm lý', 'Chỉ về Cơ thể'], correct: 'Cơ thể và Tâm lý', slide: 'Slide 26', explanation: 'Suy nhược cơ thể là hệ quả cơ thể; Stress kéo dài, Rối loạn trầm cảm là hệ quả tâm lý.' },
+            { id: 34, level: 'Vận dụng', question: 'Nếu bạn là một nhân viên y tế, việc nắm vững Tâm lý Y học giúp bạn tránh gây ra nguyên nhân Bệnh Y sinh nào sau đây nhiều nhất?', options: ['Sơ suất kỹ thuật trong chuyên môn (Doctor-induced).', 'Thiếu kiến thức về tâm lý bệnh nhân và cách tương tác (Doctor-induced).', 'Gõ nhầm sai đơn thuốc (Hospital-induced).', 'Cứng nhắc trong việc áp dụng phác đồ điều trị (Doctor-induced).'], correct: 'Thiếu kiến thức về tâm lý bệnh nhân và cách tương tác (Doctor-induced).', slide: 'Slide 23', explanation: 'Tâm lý Y học trực tiếp cung cấp kiến thức về tâm lý bệnh nhân và kỹ năng tương tác.' },
+            { id: 40, level: 'Vận dụng cao', question: 'Điều nào sau đây thể hiện mối quan hệ TƯƠNG QUAN ĐỦ ĐẦY giữa sức khỏe cơ thể và sức khỏe tinh thần theo Tâm lý Y học?', options: ['Khi cơ thể khỏe mạnh thì tinh thần luôn khỏe mạnh.', 'Cơ thể và tinh thần là hai lĩnh vực độc lập, không ảnh hưởng nhau.', 'Sự gắn kết giữa tâm lý học và y học thể hiện tính đủ đầy của chất lượng cuộc sống qua sự tương quan giữa sức khỏe cơ thể và sức khỏe tinh thần.', 'Sức khỏe cơ thể chỉ là điều kiện cần, sức khỏe tinh thần là điều kiện đủ.'], correct: 'Sự gắn kết giữa tâm lý học và y học thể hiện tính đủ đầy của chất lượng cuộc sống qua sự tương quan giữa sức khỏe cơ thể và sức khỏe tinh thần.', slide: 'Slide 15', explanation: 'Mối quan hệ được mô tả là tương quan và thể hiện tính đủ đầy của chất lượng cuộc sống.' },
+            { id: 51, level: 'Vận dụng', question: 'Bạn nên sử dụng phối hợp các phương pháp nghiên cứu tâm lý để đạt được kết quả khoa học, khách quan, toàn diện. Điều này dựa trên nhận định chung nào?', options: ['Mỗi phương pháp đều có ưu điểm.', 'Mỗi phương pháp đều có hạn chế.', 'Cần sử dụng các phương pháp thích hợp với vấn đề nghiên cứu.', 'Tất cả các ý trên đều đúng và cần thiết.'], correct: 'Tất cả các ý trên đều đúng và cần thiết.', slide: 'Slide 39', explanation: 'Nhận định chung là cần phối hợp đồng bộ các phương pháp để có kết quả khách quan, toàn diện.' },
+            { id: 52, level: 'Vận dụng cao', question: 'Việc một bác sĩ tập trung hoàn toàn vào phác đồ điều trị mà bỏ qua tiền sử bệnh nhân có thể gây ra Bệnh Y sinh thuộc nhóm nguyên nhân nào và vi phạm nguyên tắc nào?', options: ['Hospital-induced, Vi phạm quy trình.', 'Doctor-induced, Vi phạm nguyên tắc cứng nhắc trong áp dụng phác đồ.', 'Doctor-induced, Vi phạm nguyên tắc sơ suất kỹ thuật.', 'Hospital-induced, Vi phạm chất lượng dịch vụ.'], correct: 'Doctor-induced, Vi phạm nguyên tắc cứng nhắc trong áp dụng phác đồ.', slide: 'Slide 23', explanation: 'Đây là nguyên nhân thuộc Doctor-induced, cụ thể là "Cứng nhắc trong việc áp dụng phác đồ điều trị mà không tìm hiểu về đặc điểm, tiền sử bệnh nhân."' },
+            { id: 53, level: 'Vận dụng', question: 'Một bệnh viện quyết định đơn giản hóa thủ tục hành chánh rườm rà. Hành động này nhằm giảm thiểu nguyên nhân Bệnh Y sinh thuộc nhóm nào và hướng tới vai trò nào của Tâm lý Y học?', options: ['Doctor-induced, Nâng cao kỹ năng giao tiếp.', 'Hospital-induced, Nâng cao sức khỏe tinh thần.', 'Doctor-induced, Giảm thiếu chuyên môn.', 'Hospital-induced, Giảm chi phí viện phí.'], correct: 'Hospital-induced, Nâng cao sức khỏe tinh thần.', slide: 'Slide 24, 41', explanation: 'Thủ tục rườm rà là Hospital-induced. Đơn giản hóa nhằm cải thiện môi trường, nâng cao sức khỏe tinh thần.' },
+            { id: 54, level: 'Vận dụng', question: 'Để đảm bảo tính khách quan khi sử dụng phương pháp Phân tích sản phẩm của hoạt động, bạn cần chú ý điều gì?', options: ['Chỉ phân tích một sản phẩm duy nhất.', 'Không cần biết điều kiện làm ra sản phẩm.', 'Cần xem xét nhiều sản phẩm hoặc lặp lại nhiều sản phẩm cùng loại.', 'Chỉ dùng cho các sản phẩm nghệ thuật.'], correct: 'Cần xem xét nhiều sản phẩm hoặc lặp lại nhiều sản phẩm cùng loại.', slide: 'Slide 38', explanation: 'Lưu ý khi sử dụng phương pháp này là cần xem xét nhiều sản phẩm cùng loại và cố gắng biết được điều kiện hoạt động làm ra sản phẩm.' },
+            { id: 55, level: 'Vận dụng cao', question: 'Nếu bạn muốn tạo một đề thi có cân bằng về mức độ khó (Nhận biết, Thông hiểu, Vận dụng), bạn cần sử dụng phương pháp chọn mẫu nào?', options: ['Lấy mẫu ngẫu nhiên đơn giản.', 'Lấy mẫu ngẫu nhiên có lặp lại.', 'Lấy mẫu có phân lớp (Stratified Sampling).', 'Lấy mẫu theo cụm (Cluster Sampling).'], correct: 'Lấy mẫu có phân lớp (Stratified Sampling).', slide: 'N/A', explanation: 'Lấy mẫu có phân lớp đảm bảo mỗi lớp (mức độ khó) được đại diện cân bằng trong đề thi.' },
+            { id: 56, level: 'Vận dụng', question: 'Việc nhân viên y tế thường xuyên đối mặt với stress và sự kiệt sức (Burning out) có thể gây ra hậu quả gián tiếp nào lên người bệnh?', options: ['Cải thiện chất lượng dịch vụ y tế.', 'Giảm khả năng gây ra lỗi Hospital-induced.', 'Làm giảm chất lượng tương tác và thái độ đối với người bệnh.', 'Tăng khả năng tập trung vào chuyên môn.'], correct: 'Làm giảm chất lượng tương tác và thái độ đối với người bệnh.', slide: 'Slide 42', explanation: 'Stress và kiệt sức ở NVYT ảnh hưởng tiêu cực đến thái độ, cảm xúc, hành vi, từ đó ảnh hưởng tâm lý người bệnh.' },
+            { id: 57, level: 'Vận dụng cao', question: 'Trong hệ thống lý thuyết Tâm lý Y học hiện đại, không thể tách rời hệ lý thuyết nào để lý giải về tâm lý con người?', options: ['Chỉ hệ lý thuyết Y học và Khoa học thần kinh.', 'Chỉ hệ lý thuyết về tâm lý xã hội.', 'Hệ lý thuyết về tâm lý xã hội VÀ hệ lý thuyết Y học + Khoa học thần kinh.', 'Chỉ hệ lý thuyết cổ điển và hiện tượng học.'], correct: 'Hệ lý thuyết về tâm lý xã hội VÀ hệ lý thuyết Y học + Khoa học thần kinh.', slide: 'Slide 16', explanation: 'Bài giảng nhấn mạnh không thể tách rời hệ lý thuyết Tâm lý xã hội với Y học + Khoa học thần kinh để lý giải tâm lý con người.' },
+            { id: 58, level: 'Vận dụng', question: 'Nếu một nhà nghiên cứu sử dụng phương pháp Phỏng vấn sâu/Trò chuyện, nguyên tắc nào sau đây nên được ưu tiên hàng đầu để thu thập thông tin giá trị?', options: ['Tìm hiểu trước một số đặc điểm của đối tượng trước khi tiếp xúc.', 'Chỉ dùng câu hỏi đóng (Yes/No).', 'Để đối tượng dẫn dắt câu chuyện.', 'Trò chuyện không cần xác định rõ mục đích.'], correct: 'Tìm hiểu trước một số đặc điểm của đối tượng trước khi tiếp xúc.', slide: 'Slide 35', explanation: 'Lưu ý quan trọng là cần tìm hiểu trước đặc điểm đối tượng, chủ định điều khiển, và trò chuyện tự nhiên.' },
+            { id: 59, level: 'Vận dụng', question: 'Hệ quả nào sau đây thuộc về Cơ thể do mắc phải Bệnh Y sinh?', options: ['Rối loạn lo âu', 'Mất lòng tin', 'Xuất hiện các bệnh mới', 'Tuyệt vọng'], correct: 'Xuất hiện các bệnh mới', slide: 'Slide 26', explanation: 'Xuất hiện các bệnh mới, bệnh tiến triển nặng, suy nhược cơ thể là hệ quả về mặt cơ thể.' },
+            { id: 60, level: 'Vận dụng cao', question: 'Nguyên nhân nào gây ra Bệnh Y sinh, nhưng lại là yếu tố DUY TRÌ Bệnh Y sinh theo mô hình tổng quát?', options: ['Cứng nhắc trong áp dụng phác đồ điều trị (Doctor-induced)', 'Sơ suất hành chánh (Hospital-induced)', 'Yếu tố xã hội và văn hóa', 'Thiếu chuyên môn của bác sĩ'], correct: 'Yếu tố xã hội và văn hóa', slide: 'Slide 27', explanation: 'Yếu tố xã hội và văn hóa là một trong hai Yếu tố duy trì (gián tiếp) Bệnh Y sinh.' },
+        ];
+
+        // --- 2. CÁC HÀM XỬ LÝ CHUNG ---
+
+        // Hàm xáo trộn mảng (Fisher-Yates Shuffle)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Hàm lấy mẫu ngẫu nhiên không lặp (cho từng lớp)
+        function getRandomSamples(arr, num) {
+            const shuffled = [...arr];
+            shuffleArray(shuffled);
+            return shuffled.slice(0, num);
+        }
+
+        // Hàm tạo nội dung HTML cho một câu hỏi
+        function renderQuestion(q, index) {
+            const currentOptions = [...q.options];
+            shuffleArray(currentOptions); // Xáo trộn thứ tự đáp án
+
+            // Tạo tên duy nhất cho input radio dựa trên ID câu hỏi gốc và vị trí trong đề
+            const radioName = `q_${q.id}_instance_${Date.now()}`; 
+            
+            let optionsHtml = '<div class="options-list">';
+            currentOptions.forEach((option, i) => {
+                const optionValue = String.fromCharCode(65 + i); // A, B, C, D
+                optionsHtml += `<label><input type="radio" name="${radioName}" value="${option}" data-letter="${optionValue}"> ${optionValue}. ${option}</label>`;
+            });
+            optionsHtml += '</div>';
+
+            const instanceId = `q_${q.id}_display_${index}`;
+
+            return `
+                <div id="${instanceId}" class="question-card" 
+                     data-correct-answer="${q.correct}" 
+                     data-level="${q.level}"
+                     data-slide="${q.slide}" 
+                     data-explanation="${q.explanation}">
+                    <p>Câu ${index + 1} (${q.level}): ${q.question}</p>
+                    ${optionsHtml}
+                    <button class="check-btn" onclick="checkAnswer('${instanceId}', '${radioName}')">Kiểm tra</button>
+                    <div id="${instanceId}_result" class="result-message"></div>
+                </div>
+            `;
+        }
+
+        // --- 3. HÀM TẠO ĐỀ THI NGẪU NHIÊN CÓ PHÂN LỚP (STRATIFIED SAMPLING) ---
+
+        function generateNewQuiz() {
+            // 1. Phân loại câu hỏi theo mức độ
+            const levelMap = {
+                'Nhận biết': questionBank.filter(q => q.level === 'Nhận biết'),
+                'Thông hiểu': questionBank.filter(q => q.level === 'Thông hiểu'),
+                'Vận dụng': questionBank.filter(q => q.level.includes('Vận dụng')) 
+            };
+            
+            // 2. Tỷ lệ phân lớp (Tổng 20 câu)
+            const requiredCounts = {
+                'Nhận biết': 6,
+                'Thông hiểu': 8,
+                'Vận dụng': 6 
+            };
+
+            let selectedQuestions = [];
+
+            // 3. Lấy mẫu có phân lớp (Stratified Sampling)
+            for (const level in requiredCounts) {
+                const count = requiredCounts[level];
+                let questionsForLevel = levelMap[level];
+                
+                // Lấy mẫu ngẫu nhiên không lặp lại từ lớp đó
+                let samples = getRandomSamples(questionsForLevel, count);
+                selectedQuestions.push(...samples);
+            }
+
+            // 4. Xáo trộn toàn bộ câu hỏi trong đề mới
+            shuffleArray(selectedQuestions);
+            
+            // 5. Xây dựng nội dung HTML
+            let quizHtml = '';
+            selectedQuestions.forEach((q, index) => {
+                quizHtml += renderQuestion(q, index);
+            });
+
+            // 6. Tạo Mã đề ngẫu nhiên
+            const maDe = 'MD-' + new Date().getTime().toString().slice(-8);
+            document.getElementById('ma-de-info').textContent = `Mã đề: ${maDe} (Ngân hàng: ${questionBank.length} câu)`;
+            document.getElementById('quiz-content').innerHTML = quizHtml;
+        }
+
+        // --- 4. HÀM KIỂM TRA ĐÁP ÁN VÀ HIỆU ỨNG (FIXED) ---
+
+        function checkAnswer(questionInstanceId, radioName) {
+            const questionDiv = document.getElementById(questionInstanceId);
+            const resultDiv = document.getElementById(`${questionInstanceId}_result`);
+            
+            // Lấy đáp án đã chọn dựa trên tên radioName được truyền vào
+            const selectedOption = document.querySelector(`input[name="${radioName}"]:checked`);
+            
+            const dataCorrectAnswer = questionDiv.getAttribute('data-correct-answer').trim();
+            const slideInfo = questionDiv.getAttribute('data-slide');
+            const explanationText = questionDiv.getAttribute('data-explanation');
+
+            if (!selectedOption) {
+                alert("Vui lòng chọn một đáp án.");
+                return;
+            }
+
+            // 1. Lấy nội dung của đáp án đã chọn (đã FIX lỗi radio name)
+            const selectedAnswerContent = selectedOption.parentNode.textContent.substring(3).trim();
+
+            const isCorrect = selectedAnswerContent === dataCorrectAnswer;
+
+            // Reset màu nền của tất cả các đáp án và xóa giải thích cũ
+            const labels = questionDiv.querySelectorAll('.options-list label');
+            labels.forEach(label => {
+                label.style.backgroundColor = '';
+            });
+
+            const existingExplanation = questionDiv.querySelector('.explanation');
+            if (existingExplanation) {
+                existingExplanation.remove();
+            }
+
+            // 2. TÌM ĐÁP ÁN ĐÚNG VÀ CHỮ CÁI TƯƠNG ỨNG
+            let correctOptionLabel = null;
+            let correctLetter = '';
+            for (let i = 0; i < labels.length; i++) {
+                const labelText = labels[i].textContent.substring(3).trim();
+                if (labelText === dataCorrectAnswer) {
+                    correctOptionLabel = labels[i];
+                    correctLetter = labels[i].querySelector('input').getAttribute('data-letter');
+                    break;
+                }
+            }
+            
+            resultDiv.style.display = 'block';
+
+            if (isCorrect) {
+                // HIỆU ỨNG ĐÚNG: Màu xanh lá, biểu cảm chúc mừng, pháo hoa 8s
+                resultDiv.className = 'result-message correct';
+                resultDiv.innerHTML = `**CHÍNH XÁC!** 🎉 Tuyệt vời, kiến thức vững vàng!`;
+
+                // Đổi màu đáp án đúng
+                selectedOption.parentNode.style.backgroundColor = '#a7e4a7'; 
+
+                // Kích hoạt pháo hoa (8 giây)
+                const duration = 8 * 1000;
+                const end = Date.now() + duration;
+
+                (function frame() {
+                    confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, });
+                    confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, });
+                    if (Date.now() < end) {
+                        requestAnimationFrame(frame);
+                    }
+                }());
+
+            } else {
+                // HIỆU ỨNG SAI: Màu đỏ, giơ bảng chê (biểu cảm), giải thích chi tiết
+                resultDiv.className = 'result-message incorrect';
+                resultDiv.innerHTML = `**CHƯA CHÍNH XÁC.** 👎 Đáng tiếc quá! Đáp án đúng là **${correctLetter}**.`; 
+                
+                // Đổi màu đáp án sai đã chọn
+                selectedOption.parentNode.style.backgroundColor = '#f7c4c4';
+                
+                const explanation = document.createElement('div');
+                explanation.className = 'explanation';
+                explanation.style.display = 'block';
+                explanation.innerHTML = `**Giải thích chi tiết:** ${explanationText}<br>**(Nguồn: ${slideInfo})**`;
+                
+                questionDiv.appendChild(explanation);
+
+                // Tìm và tô màu đáp án đúng (màu xanh nhạt)
+                if (correctOptionLabel) {
+                    correctOptionLabel.style.backgroundColor = '#c8e6c9'; 
+                }
+            }
+        }
+        
+        // Tự động tạo đề khi trang web được tải lần đầu
+        window.onload = () => {
+            generateNewQuiz(); 
+        };
+    </script>
+</body>
+</html>
