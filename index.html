@@ -254,15 +254,15 @@
             resultDiv.style.display = 'block';
 
             if (isCorrect) {
-                // HIỆU ỨNG ĐÚNG: Màu xanh lá, biểu cảm chúc mừng, pháo hoa 8s
+                // HIỆU ỨNG ĐÚNG: Màu xanh lá, biểu cảm chúc mừng, pháo hoa 3s
                 resultDiv.className = 'result-message correct';
                 resultDiv.innerHTML = `**CHÍNH XÁC!** 🎉 Tuyệt vời, kiến thức vững vàng!`;
 
                 // Đổi màu đáp án đúng
                 selectedOption.parentNode.style.backgroundColor = '#a7e4a7'; 
 
-                // Kích hoạt pháo hoa (8 giây)
-                const duration = 8 * 1000;
+                // Kích hoạt pháo hoa (3 giây)
+                const duration = 3 * 1000;
                 const end = Date.now() + duration;
 
                 (function frame() {
@@ -276,7 +276,7 @@
             } else {
                 // HIỆU ỨNG SAI: Màu đỏ, giơ bảng chê (biểu cảm), giải thích chi tiết
                 resultDiv.className = 'result-message incorrect';
-                resultDiv.innerHTML = `**CHƯA CHÍNH XÁC.** 👎 Đáng tiếc quá! Đáp án đúng là **${correctLetter}**.`; 
+                resultDiv.innerHTML = `**CHƯA CHÍNH XÁC.** 👎 Ngốc nghếch quá! Đáp án đúng là **${correctLetter}**.`; 
                 
                 // Đổi màu đáp án sai đã chọn
                 selectedOption.parentNode.style.backgroundColor = '#f7c4c4';
@@ -301,4 +301,5 @@
         };
     </script>
 </body>
+
 </html>
