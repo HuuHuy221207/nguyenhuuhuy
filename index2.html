@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trắc nghiệm Bài 2: Cơ sở Sinh lý học Hoạt động Tâm lý (60 Câu)</title>
+    <style>
+        /* CSS cho giao diện */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; }
+        .quiz-container { max-width: 900px; margin: 40px auto; padding: 30px; background-color: white; border-radius: 10px; box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+        h1 { text-align: center; color: #0056b3; border-bottom: 2px solid #0056b3; padding-bottom: 10px; }
+        .controls { text-align: center; margin-bottom: 25px; }
+        .controls button { padding: 12px 25px; font-size: 1.1em; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; }
+        .controls button:hover { background-color: #1e7e34; }
+        .question-card { margin-bottom: 30px; padding: 20px; border-left: 5px solid #007bff; background-color: #f8fafd; border-radius: 5px; }
+        .question-card p { font-weight: bold; margin-top: 0; font-size: 1.1em; }
+        .options-list label { display: block; margin-bottom: 10px; padding: 12px; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; transition: all 0.3s; }
+        .options-list label:hover { background-color: #e0e0e0; }
+        .options-list input[type="radio"] { margin-right: 10px; }
+        .result-message { margin-top: 15px; padding: 12px; border-radius: 5px; font-weight: bold; font-size: 1em; display: none; }
+        .correct { background-color: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
+        .incorrect { background-color: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .explanation { margin-top: 10px; font-size: 0.95em; padding: 8px; border-top: 1px dashed #aaa; display: none; background-color: #fff0f0; border-radius: 5px; }
+        .check-btn { padding: 8px 15px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; transition: background-color 0.3s; }
+        .check-btn:hover { background-color: #0056b3; }
+        .footer-note { text-align: center; font-size: 0.8em; color: #666; margin-top: 40px; }
+        .ma-de { text-align: center; margin-bottom: 15px; font-weight: bold; color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>Ôn tập Bài 2: Cơ sở Giải phẫu và Sinh lý học (60 Câu)</h1>
+        <div class="controls">
+            <button onclick="generateNewQuiz()">Tạo Mã Đề Mới (20 Câu, Cân bằng mức độ)</button>
+        </div>
+        <div id="ma-de-info" class="ma-de"></div>
+        <div id="quiz-content">
+            </div>
+        <div class="footer-note">
+            *Ngân hàng câu hỏi gồm 60 câu. Mỗi mã đề gồm 20 câu được lấy ngẫu nhiên theo tỷ lệ: Nhận biết (6), Thông hiểu (8), Vận dụng/Vận dụng cao (6).
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.0/dist/confetti.browser.js"></script>
+    <script>
+        // --- 1. NGÂN HÀNG 60 CÂU HỎI (ĐÃ CÂN BẰNG MỨC ĐỘ VÀ CHI TIẾT) ---
+        const questionBank = [
+            // --- NHẬN BIẾT (20 CÂU) ---
+            { id: 1, level: 'Nhận biết', question: 'Hệ thần kinh trung ương (CNS) bao gồm những thành phần nào?', options: ['Não bộ và thần kinh ngoại biên', 'Tủy sống và hạch thần kinh', 'Não bộ và Tủy sống', 'Não bộ, Tủy sống và Hạch ngoại biên'], correct: 'Não bộ và Tủy sống', slide: 'Slide 5, 8', explanation: 'Hệ thần kinh trung ương bao gồm não bộ (Brain) và tủy sống (Spinal cord).' },
+            { id: 2, level: 'Nhận biết', question: 'Bộ phận nào của nơron có chức năng chủ yếu là nhận tín hiệu từ các tế bào thần kinh khác?', options: ['Thân tế bào', 'Sợi trục', 'Đuôi gai', 'Đầu tận cùng'], correct: 'Đuôi gai', slide: 'Slide 6', explanation: 'Đuôi gai (Dendrites) là cấu trúc sợi phân nhánh, có chức năng nhận tín hiệu.' },
+            { id: 3, level: 'Nhận biết', question: 'Vùng nào của vỏ đại não đảm nhận vai trò nhận thức thông tin thị giác?', options: ['Thùy Trán', 'Thùy Thái dương', 'Thùy Đỉnh', 'Thùy Chẩm'], correct: 'Thùy Chẩm', slide: 'Slide 17', explanation: 'Thùy chẩm (Occipital lobe) có vai trò trong nhận thức thông tin thị giác.' },
+            { id: 4, level: 'Nhận biết', question: 'Vùng Wernicke, trung khu chính của sự hiểu ngôn ngữ, nằm ở đâu?', options: ['Hồi trán dưới bán cầu ưu thế', 'Hồi thái dương trên bán cầu ưu thế', 'Thùy đỉnh', 'Thân não'], correct: 'Hồi thái dương trên bán cầu ưu thế', slide: 'Slide 19', explanation: 'Vùng Wernicke nằm ở phần sau của hồi thái dương trên bán cầu ưu thế.' },
+            { id: 5, level: 'Nhận biết', question: 'Gian não (diencephalon) bao gồm những thành phần chính nào?', options: ['Vỏ đại não, thân não, tiểu não', 'Đồi thị, vùng dưới đồi, tuyến tùng, não thất III', 'Cuốn não, các lồi não, đồi thị', 'Hành não, cầu não, trung não'], correct: 'Đồi thị, vùng dưới đồi, tuyến tùng, não thất III', slide: 'Slide 8, 23', explanation: 'Gian não bao gồm Đồi thị, Vùng dưới đồi, Tuyến tùng, và Não thất III.' },
+            { id: 6, level: 'Nhận biết', question: 'Thành phần nào của não có vai trò là trạm trung gian chuyển tiếp các xung thần kinh từ các thụ thể đến vỏ não và ngược lại?', options: ['Vùng dưới đồi', 'Hạch hạnh nhân', 'Đồi thị', 'Hồi hải mã'], correct: 'Đồi thị', slide: 'Slide 24', explanation: 'Đồi thị (Thalamus) là trạm trung gian chuyển tiếp cảm giác trong các hệ thống giác quan.' },
+            { id: 7, level: 'Nhận biết', question: 'Hormone nào được sản xuất bởi Tuyến tùng (Pineal Gland) để điều hòa nhịp sinh học của giấc ngủ?', options: ['Oxytocine', 'CRH', 'ACTH', 'Melatonin'], correct: 'Melatonin', slide: 'Slide 29', explanation: 'Tuyến tùng sản xuất hormone melatonin, điều hòa nhịp sinh học của giấc ngủ.' },
+            { id: 8, level: 'Nhận biết', question: 'Hồi hải mã (Hippocampus) có vai trò chủ yếu trong hoạt động tâm lý nào?', options: ['Quyết định hành động xúc cảm (sợ hãi, gây hấn)', 'Điều hòa thân nhiệt và huyết áp', 'Lưu giữ thông tin và hình thành ký ức dài hạn', 'Điều khiển vận động cơ mặt'], correct: 'Lưu giữ thông tin và hình thành ký ức dài hạn', slide: 'Slide 35', explanation: 'Hồi hải mã liên quan đến hoạt động lưu giữ thông tin và hình thành ký ức trong trí nhớ dài hạn.' },
+            { id: 9, level: 'Nhận biết', question: 'Chức năng của tế bào thần kinh đệm (Astrocyte Nerve) là gì?', options: ['Dẫn truyền vận động cho cơ quan.', 'Dẫn truyền cảm giác và hình thành cảm xúc.', 'Cung cấp dinh dưỡng, sửa chữa mô thần kinh và hình thành hàng rào máu não.', 'Dẫn truyền xung động thần kinh đi xa.'], correct: 'Cung cấp dinh dưỡng, sửa chữa mô thần kinh và hình thành hàng rào máu não.', slide: 'Slide 7', explanation: 'Tế bào thần kinh đệm có chức năng cung cấp dinh dưỡng, sửa chữa và hình thành hàng rào máu não.' },
+            { id: 10, level: 'Nhận biết', question: 'Tốc độ dẫn truyền vật lý của xung thần kinh trên sợi trục có bao Myeline là bao nhiêu?', options: ['Khoảng 72 m/s', 'Khoảng 130 m/s', 'Khoảng 50 m/s', 'Chậm hơn sợi trục không Myeline'], correct: 'Khoảng 130 m/s', slide: 'Slide 49', explanation: 'Sợi trục có bao Myeline dẫn truyền xung năng với V khoảng 130m/s (nhảy cóc qua khe Ranvier).' },
+            { id: 11, level: 'Nhận biết', question: 'Trong phản xạ không điều kiện ở tủy sống, chuỗi nơron hoạt động là gì?', options: ['Vận động – Cảm giác – Liên lạc', 'Cảm giác – Liên lạc – Vận động', 'Liên lạc – Cảm giác – Vận động', 'Cảm giác – Vận động – Thực vật'], correct: 'Cảm giác – Liên lạc – Vận động', slide: 'Slide 40', explanation: 'Phản xạ không điều kiện qua hoạt động của 3 loại nơron: Cảm giác – liên lạc – vận động.' },
+            { id: 12, level: 'Nhận biết', question: 'Quy luật nào của hệ thần kinh cấp cao giải thích hiện tượng khi bạn quá tập trung làm việc trí óc đến mức mệt mỏi, chán nản, buồn ngủ?', options: ['Quy luật lan tỏa và tập trung', 'Quy luật cảm ứng qua lại', 'Quy luật tính hệ thống', 'Quy luật chuyển từ hưng phấn sang ức chế'], correct: 'Quy luật chuyển từ hưng phấn sang ức chế', slide: 'Slide 59', explanation: 'Đây là ví dụ điển hình cho Quy luật chuyển từ hưng phấn sang ức chế.' },
+            { id: 13, level: 'Nhận biết', question: 'Nửa bên nào của tủy sống đóng giữ vai trò điều khiển cơ vân (trung ương phản xạ không điều kiện)?', options: ['Nửa bên phải', 'Nửa bên trái', 'Phần chất xám', 'Phần chất trắng'], correct: 'Nửa bên trái', slide: 'Slide 36', explanation: 'Nửa bên trái tủy sống đóng giữ vai trò điều khiển cơ vân (trung ương phản xạ không điều kiện).' },
+            { id: 14, level: 'Nhận biết', question: 'Chức năng chính của Vùng dưới đồi (Hypothalamus) liên quan đến hệ thần kinh giao cảm là gì?', options: ['Giãn mạch, nhịp tim chậm', 'Hung hãn, sợ hãi, tăng huyết áp', 'Điều hòa nhịp sinh học giấc ngủ', 'Kiểm soát bàng quang'], correct: 'Hung hãn, sợ hãi, tăng huyết áp', slide: 'Slide 26', explanation: 'Vùng bên và sau của Vùng dưới đồi liên quan đến hệ TK giao cảm (tim đập nhanh, đồng tử giãn, co mạch, tăng huyết áp, hung hãn, sợ hãi).' },
+            { id: 15, level: 'Nhận biết', question: 'Trong quá trình dẫn truyền hóa học, ion nào tràn vào nút cuối cùng của synap để kích hoạt phóng thích hoặc ức chế chất dẫn truyền thần kinh?', options: ['Ion Natri (Na+)', 'Ion Kali (K+)', 'Ion Canxi (Ca++)', 'Ion Clo (Cl-)'], correct: 'Ion Canxi (Ca++)', slide: 'Slide 50', explanation: 'Ion Canxi (Ca++) tràn vào nút cuối cùng của synap để kích hoạt phóng thích hoặc ức chế các chất dẫn truyền thần kinh.' },
+            { id: 16, level: 'Nhận biết', question: 'Vùng Broca (vùng cơ năng phát âm) chủ yếu nằm ở thùy nào của vỏ não?', options: ['Thùy Chẩm', 'Thùy Đỉnh', 'Thùy Thái dương', 'Thùy Trán'], correct: 'Thùy Trán', slide: 'Slide 14', explanation: 'Vùng Broca nằm ở Thùy Trán (vùng 44, 45).' },
+            { id: 17, level: 'Nhận biết', question: 'Chức năng nào sau đây là của Vỏ Đại Não (cortex cerebri)?', options: ['Điều hòa hệ nội tiết', 'Điều hòa nhịp sinh học giấc ngủ', 'Phân tích tổng hợp thông tin (cảm giác, tri giác, nhận thức)', 'Điều khiển phản xạ gân cơ'], correct: 'Phân tích tổng hợp thông tin (cảm giác, tri giác, nhận thức)', slide: 'Slide 11', explanation: 'Vỏ đại não là nơi tập trung các vùng chức năng tiếp nhận, phân tích và tổng hợp các thông tin nội thể và bên ngoài cơ thể.' },
+            { id: 18, level: 'Nhận biết', question: 'Năng lượng và thông tin là hai thành phần cơ bản đầu tiên của hoạt động tâm lý. Năng lượng thuộc về mặt nào?', options: ['Cơ thể', 'Bên ngoài cơ thể', 'Tâm lý', 'Xã hội'], correct: 'Cơ thể', slide: 'Slide 47', explanation: 'Năng lượng (cung cấp bởi các quá trình chuyển hóa) thuộc về cơ thể.' },
+            { id: 19, level: 'Nhận biết', question: 'Dịch não tủy được bài tiết bởi thành phần nào?', options: ['Ống tủy sống', 'Màng nhện và màng nuôi', 'Các đám rối màng mạch trong các não thất', 'Màng cứng'], correct: 'Các đám rối màng mạch trong các não thất', slide: 'Slide 42', explanation: 'Dịch não tủy được bài tiết do các đám rối màng mạch trong các não thất.' },
+            { id: 20, level: 'Nhận biết', question: 'Quy luật nào của hệ thần kinh cấp cao giải thích hiện tượng khi hưng phấn ở một vùng thì các vùng xung quanh sẽ ở trạng thái ức chế?', options: ['Quy luật lan tỏa và tập trung', 'Quy luật cảm ứng không gian', 'Quy luật tính hệ thống', 'Quy luật chuyển từ hưng phấn sang ức chế'], correct: 'Quy luật cảm ứng không gian', slide: 'Slide 61', explanation: 'Đây là định nghĩa của Cảm ứng không gian (một phần của Quy luật cảm ứng qua lại).' },
+
+            // --- THÔNG HIỂU (20 CÂU) ---
+            { id: 21, level: 'Thông hiểu', question: 'Tại sao Hệ Limbic (Hệ viền) còn được gọi là “não xúc cảm”?', options: ['Vì nó là nơi duy nhất tạo ra cảm xúc.', 'Vì nó liên kết chặt chẽ với vỏ đại não.', 'Vì nó liên kết chặt chẽ với não giữa (đồi thị, vùng dưới đồi) có vai trò biểu thị và gây ra xúc cảm.', 'Vì nó chỉ điều khiển hành vi bản năng.'], correct: 'Vì nó liên kết chặt chẽ với não giữa (đồi thị, vùng dưới đồi) có vai trò biểu thị và gây ra xúc cảm.', slide: 'Slide 34', explanation: 'Hệ viền liên kết chặt chẽ với não giữa (đồi thị, vùng dưới đồi) nên được gọi là "não xúc cảm" (có vai trò biểu thị và gây ra xúc cảm).' },
+            { id: 22, level: 'Thông hiểu', question: 'Sự khác biệt chính giữa sự dẫn truyền vật lý và dẫn truyền hóa học trong hệ thần kinh là gì?', options: ['Dẫn truyền vật lý nhanh hơn dẫn truyền hóa học.', 'Dẫn truyền hóa học chỉ xảy ra ở Khe Ranvier.', 'Dẫn truyền vật lý là sự di chuyển ion trên màng, còn dẫn truyền hóa học là sự phóng thích chất dẫn truyền qua khe Synap.', 'Dẫn truyền vật lý chỉ liên quan đến phản xạ có điều kiện.'], correct: 'Dẫn truyền vật lý là sự di chuyển ion trên màng, còn dẫn truyền hóa học là sự phóng thích chất dẫn truyền qua khe Synap.', slide: 'Slide 48, 50', explanation: 'Dẫn truyền vật lý là xung động điện (ion), hóa học là chất dẫn truyền thần kinh trung gian.' },
+            { id: 23, level: 'Thông hiểu', question: 'Sự liên kết hoạt động giữa hai Bán cầu Đại não (BCĐN) trái và phải diễn ra như thế nào?', options: ['Hai BCĐN hoạt động hoàn toàn độc lập.', 'Chúng được liên kết bởi các bó sợi thần kinh trong suốt (Thể Chai).', 'Chỉ có BCĐN ưu thế mới có khả năng tạo ra tư duy.', 'Sự liên kết chỉ hình thành nên các hoạt động cơ thể.'], correct: 'Chúng được liên kết bởi các bó sợi thần kinh trong suốt (Thể Chai).', slide: 'Slide 20', explanation: 'Hai BCĐN được liên kết chặt chẽ bởi Thể Chai (Corpus callosum), tạo thành một thể thống nhất.' },
+            { id: 24, level: 'Thông hiểu', question: 'Tại sao việc luyện tập trí nhớ lại nên kết hợp chức năng thị giác (Viết, vẽ sơ đồ) với thính giác và ngôn ngữ?', options: ['Vì thính giác là chức năng chính của trí nhớ.', 'Vì Vỏ não chỉ xử lý thông tin thị giác.', 'Vì việc kết hợp nhiều loại mã hóa thông tin (coding) giúp lưu giữ hiệu quả hơn.', 'Vì Thùy chẩm và Thùy trán là hai vùng chức năng duy nhất.'], correct: 'Vì việc kết hợp nhiều loại mã hóa thông tin (coding) giúp lưu giữ hiệu quả hơn.', slide: 'Slide 65', explanation: 'Việc mã hóa thông tin theo cách trực quan sinh động, phối hợp nhiều loại mã hóa giúp tăng cường lưu trữ.' },
+            { id: 25, level: 'Thông hiểu', question: 'Chức năng nào sau đây là đặc thù của bộ não con người trong quá trình dẫn truyền thông tin?', options: ['Xử lý nội dung thông tin.', 'Vận chuyển thông tin qua nơron.', 'Tiếp nhận, dẫn truyền, xử lý hai mặt của thông tin (nội dung và cảm xúc của thông tin).', 'Chỉ xử lý thông tin cảm giác đơn thuần.'], correct: 'Tiếp nhận, dẫn truyền, xử lý hai mặt của thông tin (nội dung và cảm xúc của thông tin).', slide: 'Slide 48', explanation: 'Việc xử lý đồng thời nội dung và cảm xúc của thông tin là một đặc thù của bộ não con người.' },
+            { id: 26, level: 'Thông hiểu', question: 'Vùng dưới đồi (Hypothalamus) đóng vai trò gì trong việc điều hòa hành vi sinh dục?', options: ['Quy định sự biệt hóa giới tính và hành vi sinh dục.', 'Chỉ kiểm soát nhiệt độ cơ thể.', 'Chỉ điều hòa giấc ngủ.', 'Chỉ liên quan đến hệ phó giao cảm.'], correct: 'Quy định sự biệt hóa giới tính và hành vi sinh dục.', slide: 'Slide 26', explanation: 'Vùng dưới đồi điều hòa hệ nội tiết và có chức năng sinh dục (sự biệt hóa giới tính, qui định hành vi sinh dục).' },
+            { id: 27, level: 'Thông hiểu', question: 'Theo Quy luật lan tỏa và tập trung, mục đích của việc xung năng thu hẹp lại ở các trung khu thần kinh tiêu biểu là gì?', options: ['Để chuyển sang trạng thái ức chế hoàn toàn.', 'Để gây ra cảm ứng thời gian.', 'Để các phản ứng chỉ xảy ra ở các cơ quan đặc trưng, nhờ đó có tính năng bảo vệ, chính xác và hiệu quả.', 'Để chuẩn bị cho Quy luật tính hệ thống.'], correct: 'Để các phản ứng chỉ xảy ra ở các cơ quan đặc trưng, nhờ đó có tính năng bảo vệ, chính xác và hiệu quả.', slide: 'Slide 60', explanation: 'Sự thu hẹp lại (tập trung) giúp các phản ứng chính xác và hiệu quả hơn.' },
+            { id: 28, level: 'Thông hiểu', question: 'Trong chẩn đoán tổn thương Hệ thần kinh, tại sao Phản xạ đồng tử và Phản xạ mi mắt được áp dụng?', options: ['Vì chúng là phản xạ có điều kiện.', 'Vì chúng không liên quan đến hệ thần kinh trung ương.', 'Vì chúng là các phản xạ giúp chẩn đoán tổn thương Hệ TK (phản xạ tự nhiên/không điều kiện).', 'Vì chúng liên quan đến trương lực cơ.'], correct: 'Vì chúng là các phản xạ giúp chẩn đoán tổn thương Hệ TK (phản xạ tự nhiên/không điều kiện).', slide: 'Slide 73', explanation: 'Các phản xạ như đồng tử, mi mắt, Morro là các phản xạ giúp chẩn đoán tổn thương Hệ TK.' },
+            { id: 29, level: 'Thông hiểu', question: 'Sự thương tổn thực thể hay rối loạn chức năng dẫn truyền thông tin của hệ thần kinh sẽ dẫn đến hệ quả gì?', options: ['Tăng cường hoạt động tâm lý.', 'Chỉ ảnh hưởng đến vận động.', 'Dẫn đến sự bất thường về tâm lý hoặc bệnh lý tâm thần.', 'Chỉ ảnh hưởng đến hệ thần kinh ngoại biên.'], correct: 'Dẫn đến sự bất thường về tâm lý hoặc bệnh lý tâm thần.', slide: 'Slide 75', explanation: 'Sự thương tổn hay rối loạn chức năng dẫn truyền thông tin là nguyên nhân dẫn đến bất thường tâm lý/bệnh lý tâm thần.' },
+            { id: 30, level: 'Thông hiểu', question: 'Phương pháp Thực nghiệm trong Tâm lý học Y học có thể được phân loại thành những loại cơ bản nào?', options: ['Thực nghiệm lâm sàng và cận lâm sàng', 'Thực nghiệm vật lý và hóa học', 'Thực nghiệm tự nhiên và thực nghiệm trong phòng thí nghiệm', 'Thực nghiệm định tính và định lượng'], correct: 'Thực nghiệm tự nhiên và thực nghiệm trong phòng thí nghiệm', slide: 'Slide 34, Bài 1', explanation: 'Dựa trên Bài 1, phương pháp thực nghiệm cơ bản là tự nhiên và phòng thí nghiệm (Mặc dù bài 2 không đề cập, nhưng đây là kiến thức cơ sở từ bài trước).' },
+            { id: 31, level: 'Thông hiểu', question: 'Quy luật cảm ứng thời gian (nối tiếp) có ý nghĩa gì đối với sự hưng phấn?', options: ['Sau ức chế, hưng phấn quay lại cần có kích thích ngoại lai.', 'Hưng phấn quay lại ngay lập tức mà không cần kích thích ngoại lai.', 'Sau một thời gian ức chế, xung năng có xu hướng quay trở lại hưng phấn mà không cần tác động của kích thích ngoại lai.', 'Hưng phấn bị dập tắt hoàn toàn.'], correct: 'Sau một thời gian ức chế, xung năng có xu hướng quay trở lại hưng phấn mà không cần tác động của kích thích ngoại lai.', slide: 'Slide 61', explanation: 'Đây là định nghĩa của cảm ứng thời gian (nối tiếp).' },
+            { id: 32, level: 'Thông hiểu', question: 'Cảm giác bản năng (đói, thèm sinh dục, ăn uống, giấc ngủ) chủ yếu được kiểm soát bởi thành phần nào của Gian não?', options: ['Đồi thị', 'Tuyến tùng', 'Não thất III', 'Vùng dưới đồi'], correct: 'Vùng dưới đồi', slide: 'Slide 26, 31', explanation: 'Vùng dưới đồi kiểm soát chức năng sinh dục, giấc ngủ, cuồng ăn và liên quan đến các cảm giác bản năng.' },
+            { id: 33, level: 'Thông hiểu', question: 'Chất trắng của Tủy sống có chức năng gì?', options: ['Tiếp nhận và xử lý thông tin.', 'Dẫn truyền thông tin (đường hướng tâm và li tâm).', 'Điều khiển phản xạ không điều kiện.', 'Là nơi chứa dịch não tủy.'], correct: 'Dẫn truyền thông tin (đường hướng tâm và li tâm).', slide: 'Slide 39', explanation: 'Chất trắng (gồm các sợi trục nơron) giúp dẫn truyền thông tin thần kinh (đường đi lên và đi xuống).' },
+            { id: 34, level: 'Thông hiểu', question: 'Sự quyết đoán (trigging) được mô tả là không gian pha trộn giữa yếu tố nào?', options: ['Cảm xúc và Hành vi', 'Tư duy và Hành vi', 'Trực giác và Logic', 'Ý thức và Vô thức'], correct: 'Tư duy và Hành vi', slide: 'Slide 70', explanation: 'Sự quyết đoán là nơi không gian pha trộn giữa tư duy và hành vi (phần kết thúc của tư duy và bắt đầu hành vi).' },
+            { id: 35, level: 'Thông hiểu', question: 'Bán cầu não phải đảm trách chức năng nào?', options: ['Từ ngữ, con số, lý luận', 'Phân tích, danh sách', 'Nhịp điệu, màu sắc, hình dạng, tưởng tượng', 'Vận động và ngôn ngữ diễn đạt'], correct: 'Nhịp điệu, màu sắc, hình dạng, tưởng tượng', slide: 'Slide 20', explanation: 'Bán cầu não phải đảm trách các chức năng sáng tạo, hình ảnh: nhịp điệu, màu sắc, hình dạng, bản đồ, tưởng tượng, mơ mộng.' },
+            { id: 36, level: 'Thông hiểu', question: 'Vùng ngôn ngữ diễn đạt (Vùng Broca) và vùng hiểu ngôn ngữ (Vùng Wernicke) nằm ở những thùy não nào?', options: ['Thùy Trán và Thùy Chẩm', 'Thùy Đỉnh và Thùy Thái dương', 'Thùy Trán và Thùy Thái dương', 'Thùy Chẩm và Thùy Thái dương'], correct: 'Thùy Trán và Thùy Thái dương', slide: 'Slide 19', explanation: 'Vùng Broca ở Thùy Trán, Vùng Wernicke ở Thùy Thái dương.' },
+            { id: 37, level: 'Thông hiểu', question: 'Tế bào thần kinh cảm giác (Sensitive nerve) có chức năng gì?', options: ['Dẫn truyền vận động cho cơ quan.', 'Dẫn truyền cảm giác, hình thành cảm xúc.', 'Cung cấp dinh dưỡng cho mô thần kinh.', 'Hình thành hàng rào máu não.'], correct: 'Dẫn truyền cảm giác, hình thành cảm xúc.', slide: 'Slide 7', explanation: 'Tế bào thần kinh cảm giác dẫn truyền cảm giác và hình thành cảm xúc.' },
+            { id: 38, level: 'Thông hiểu', question: 'Dịch não tủy có tác dụng bảo vệ tổ chức thần kinh thông qua hai cơ chế nào?', options: ['Chức năng phản xạ và dẫn truyền.', 'Ngăn cản chất độc lọt vào và đóng vai trò hệ thống đệm bảo vệ khỏi chấn thương.', 'Điều hòa nhịp sinh học và nhiệt độ.', 'Dẫn truyền vật lý và hóa học.'], correct: 'Ngăn cản chất độc lọt vào và đóng vai trò hệ thống đệm bảo vệ khỏi chấn thương.', slide: 'Slide 42', explanation: 'Hai cơ chế là: Ngăn cản chất độc và đóng vai trò như hệ thống đệm.' },
+            { id: 39, level: 'Thông hiểu', question: 'Sự lập lại (tái hiện hình ảnh) với tần số phù hợp (ít nhất 3 lần cho sự kiện) có ý nghĩa gì trong luyện tập trí nhớ?', options: ['Giảm tải cho hồi hải mã.', 'Tăng cường sự hứng thú.', 'Ứng dụng Quy luật hưng phấn sang ức chế.', 'Tăng cường khả năng lưu trữ thông tin trong bộ nhớ.'], correct: 'Tăng cường khả năng lưu trữ thông tin trong bộ nhớ.', slide: 'Slide 66', explanation: 'Sự lập lại với tần số phù hợp giúp củng cố và lưu trữ thông tin.' },
+            { id: 40, level: 'Thông hiểu', question: 'Phần nào của tủy sống có hình chữ H và đóng vai trò tiếp nhận, xử lý thông tin để quyết định phản ứng?', options: ['Chất trắng', 'Màng nhện', 'Chất xám', 'Ống tủy sống'], correct: 'Chất xám', slide: 'Slide 38', explanation: 'Chất xám (hình chữ H, nằm phía trong) đóng vai trò tiếp nhận, xử lý thông tin và quyết định phản ứng với kích thích bên ngoài.' },
+
+            // --- VẬN DỤNG/VẬN DỤNG CAO (20 CÂU) ---
+            { id: 41, level: 'Vận dụng', question: 'Một vận động viên đang biểu diễn tạp kỹ, thực hiện các hành động phức tạp liên quan đến thị giác, tay chân và thăng bằng. Hoạt động này minh họa cho quy luật nào của hệ thần kinh cấp cao?', options: ['Quy luật cảm ứng qua lại', 'Quy luật chuyển từ hưng phấn sang ức chế', 'Quy luật tính hệ thống', 'Quy luật lan tỏa và tập trung'], correct: 'Quy luật tính hệ thống', slide: 'Slide 62', explanation: 'Sự liên kết có tính hệ thống của các xung năng thị giác, tay chân, cơ thể trong biểu diễn tạp kỹ là ví dụ của Quy luật tính hệ thống.' },
+            { id: 42, level: 'Vận dụng cao', question: 'Theo mô hình HPA (trục Vùng dưới đồi – Tuyến yên – Tuyến thượng thân), chất nào được tuyến thượng thân phóng thích cuối cùng trong phản ứng căng thẳng (stress)?', options: ['CRH (Corticotropin-releasing hormone)', 'ACTH (Adrenocorticotropic hormone)', 'Dopamine', 'Cortisol'], correct: 'Cortisol', slide: 'Slide 54', explanation: 'Trong phản ứng stress, CRH -> ACTH -> Tuyến thượng thân phóng thích Cortisol.' },
+            { id: 43, level: 'Vận dụng', question: 'Một sinh viên cảm thấy quá căng thẳng và lo lắng khi học, điều này khiến khả năng ghi nhớ giảm sút. Theo kiến thức về sinh lý, sinh viên đó nên làm gì để luyện tập trí nhớ hiệu quả hơn?', options: ['Kéo dài thời gian tập trung lên 4 tiếng/lần.', 'Cố gắng thuộc lòng những thông tin khó hiểu.', 'Đảm bảo cảm xúc lành mạnh, tích cực và cơ thể khỏe mạnh.', 'Giảm thiểu yếu tố thị giác khi học.'], correct: 'Đảm bảo cảm xúc lành mạnh, tích cực và cơ thể khỏe mạnh.', slide: 'Slide 66', explanation: 'Cảm xúc tích cực và cơ thể khỏe mạnh là yếu tố cần thiết cho quá trình ghi nhớ.' },
+            { id: 44, level: 'Vận dụng cao', question: 'Khi bạn đang tập trung cao độ vào việc đọc sách (hưng phấn ở một vùng não), hành động gì của các vùng thần kinh xung quanh minh họa cho quy luật cảm ứng không gian?', options: ['Các vùng xung quanh chuyển sang trạng thái hưng phấn.', 'Các vùng xung quanh chuyển sang trạng thái ức chế.', 'Cường độ phản xạ có điều kiện tăng lên.', 'Tư duy chuyển sang vô thức.'], correct: 'Các vùng xung quanh chuyển sang trạng thái ức chế.', slide: 'Slide 61', explanation: 'Quy luật cảm ứng không gian: Khi một vùng được kích thích (hưng phấn) thì các vùng xung quanh sẽ ở trạng thái ức chế.' },
+            { id: 45, level: 'Vận dụng', question: 'Một người đang ở trạng thái trầm cảm. Theo kiến thức về sự quyết đoán và cảm xúc, hiệu ứng hành vi của người đó sẽ như thế nào nếu cố gắng đưa ra quyết định?', options: ['Quyết đoán nhanh chóng và chính xác.', 'Sự quyết đoán có thể không xảy ra hoặc hiệu ứng hành vi không đạt yêu cầu dự đoán.', 'Hiệu ứng hành vi đạt đến cực đỉnh thành công.', 'Quyết đoán chậm nhưng rất logic.'], correct: 'Sự quyết đoán có thể không xảy ra hoặc hiệu ứng hành vi không đạt yêu cầu dự đoán.', slide: 'Slide 71', explanation: 'Nếu có cảm xúc trầm cảm, sự quyết đoán có thể không xảy ra hoặc hiệu ứng hành vi không đạt yêu cầu dự đoán.' },
+            { id: 46, level: 'Vận dụng', question: 'Tại sao thời điểm trước khi đi ngủ hoặc sau khi thức dậy là thời điểm tốt nhất để tái hiện thông tin lưu trữ trong bộ nhớ?', options: ['Vì đây là lúc não chuyển từ ức chế sang hưng phấn.', 'Vì đây là lúc hệ giao cảm hoạt động mạnh nhất.', 'Vì đây là lúc các chất dẫn truyền thần kinh đạt đỉnh.', 'Vì đây là lúc hệ thần kinh thực vật ngừng hoạt động.'], correct: 'Vì đây là lúc não chuyển từ ức chế sang hưng phấn.', slide: 'Slide 66, 61', explanation: 'Điều này liên quan đến Quy luật cảm ứng thời gian (nối tiếp), sau một thời gian ức chế (ngủ sâu), xung năng có xu hướng quay lại hưng phấn.' },
+            { id: 47, level: 'Vận dụng', question: 'Việc tập luyện kỹ năng tư duy chiến lược và tư duy giải quyết vấn đề thuộc ứng dụng thực tiễn nào?', options: ['Luyện tập trí nhớ', 'Luyện tập kỹ năng tư duy', 'Thư giãn - Thiền & Giấc ngủ sâu', 'Áp dụng vào chẩn đoán'], correct: 'Luyện tập kỹ năng tư duy', slide: 'Slide 67', explanation: 'Tư duy logic, tư duy giải quyết vấn đề, tư duy chiến lược đều là các nội dung của việc luyện tập kỹ năng tư duy.' },
+            { id: 48, level: 'Vận dụng cao', question: 'Một người bị tổn thương Hạch Hạnh nhân (Amygdala). Hoạt động tâm lý nào sau đây có khả năng bị ảnh hưởng nhiều nhất?', options: ['Tư duy logic và ngôn ngữ diễn đạt.', 'Nhận thức thông tin thị giác.', 'Phản ứng xúc cảm (sợ hãi, gây hấn) và trí nhớ cảm xúc.', 'Cảm giác đau có ý thức.'], correct: 'Phản ứng xúc cảm (sợ hãi, gây hấn) và trí nhớ cảm xúc.', slide: 'Slide 35', explanation: 'Hạch hạnh nhân có vai trò quyết định hành động và phản ứng xúc cảm (sợ hãi, lo lắng, gây hấn) và lưu trữ trí nhớ liên quan đến cảm xúc.' },
+            { id: 49, level: 'Vận dụng', question: 'Để giải quyết một vấn đề, ngoài tư duy logic, bạn cần áp dụng tư duy phản biện sự logic và sự giả định của mình. Mục đích của tư duy phản biện này là gì?', options: ['Xác định nguồn lực tài chính.', 'Xác định thời điểm kết thúc.', 'Dự đoán các yếu tố rủi ro và hệ quả theo hiệu suất thấp nhất.', 'Xác định quy trình giải quyết rủi ro.'], correct: 'Dự đoán các yếu tố rủi ro và hệ quả theo hiệu suất thấp nhất.', slide: 'Slide 69', explanation: 'Tư duy phản biện cho phương pháp, nguồn lực và dự đoán kết quả thực hiện/ Quy trình giải quyết rủi ro.' },
+            { id: 50, level: 'Vận dụng', question: 'Theo Quy luật tương quan giữa cường độ kích thích và cường độ phản xạ có điều kiện, nếu bạn giảm cường độ kích thích thấp hơn ngưỡng xuất hiện phản xạ, điều gì sẽ xảy ra?', options: ['Cường độ phản xạ có điều kiện tăng.', 'Cường độ phản xạ có điều kiện không đổi.', 'Cường độ phản xạ giảm dần hoặc phản xạ bị dập tắt.', 'Phản xạ có điều kiện chuyển thành phản xạ không điều kiện.'], correct: 'Cường độ phản xạ giảm dần hoặc phản xạ bị dập tắt.', slide: 'Slide 63', explanation: 'Khi cường độ kích giảm thấp hơn ngưỡng, cường độ phản xạ giảm dần hoặc phản xạ bị dập tắt.' },
+            { id: 51, level: 'Vận dụng', question: 'Trong sơ đồ tiến trình hình thành ý nghĩa thông tin và cảm giác, sự dẫn truyền TK (Hóa học) liên quan đến những vùng thần kinh nào?', options: ['Chỉ Vỏ não và Bán cầu đại não.', 'Não giữa, trung não, Bán cầu đại não, hệ TK giao cảm.', 'Chỉ Hệ thần kinh ngoại biên.', 'Chỉ Tủy sống và Hành não.'], correct: 'Não giữa, trung não, Bán cầu đại não, hệ TK giao cảm.', slide: 'Slide 55', explanation: 'Dẫn truyền Hóa học liên quan đến Não giữa, trung não, Bán cầu đại não, hệ TK giao cảm.' },
+            { id: 52, level: 'Vận dụng', question: 'Việc luyện tập các kỹ năng nghệ thuật hoặc thể dục thể thao là ví dụ minh họa rõ ràng nhất cho quy luật nào?', options: ['Quy luật chuyển từ hưng phấn sang ức chế.', 'Quy luật lan tỏa và tập trung.', 'Quy luật cảm ứng qua lại.', 'Quy luật tương quan cường độ.'], correct: 'Quy luật lan tỏa và tập trung.', slide: 'Slide 60', explanation: 'Đọc sách, nghe nhạc, TDTT... là ví dụ cho việc xung năng thu hẹp lại ở các trung khu tiêu biểu (tập trung).' },
+            { id: 53, level: 'Vận dụng cao', question: 'Sự dũng cảm, quyết đoán nhanh chóng trong tình huống nguy hiểm cần sự kết hợp chặt chẽ của những vùng não nào?', options: ['Thùy Chẩm và Vỏ não cảm giác.', 'Hành não và Cầu não.', 'Hồi hải mã và Tủy sống.', 'Hệ Limbic, Vùng dưới đồi và Thùy trán trước.'], correct: 'Hệ Limbic, Vùng dưới đồi và Thùy trán trước.', slide: 'Slide 34', explanation: 'Hệ limbic (xúc cảm), Vùng dưới đồi (phản ứng đánh/chạy) liên kết với Thùy trán trước (ra quyết định).' },
+            { id: 54, level: 'Vận dụng', question: 'Để kiểm soát cảm xúc giữ trạng thái cân bằng (bình tĩnh, trầm tĩnh), bạn nên áp dụng ứng dụng thực tiễn nào của các quy luật thần kinh?', options: ['Luyện tập trí nhớ bằng thị giác.', 'Ứng dụng các quy luật Hưng phấn VS Ức chế và Quy luật cảm ứng (Thư giãn - Thiền).', 'Tập trung vào tư duy logic.', 'Dùng phản xạ đồng tử.'], correct: 'Ứng dụng các quy luật Hưng phấn VS Ức chế và Quy luật cảm ứng (Thư giãn - Thiền).', slide: 'Slide 72', explanation: 'Thư giãn, Thiền và Giấc ngủ sâu là ứng dụng của Quy luật Hưng phấn VS Ức chế và Quy luật cảm ứng.' },
+            { id: 55, level: 'Vận dụng cao', question: 'Sự khác biệt giữa tư duy logic và trực giác (intuition) là gì?', options: ['Tư duy logic thuộc ý thức, trực giác thuộc vô thức và không có sự giải thích logic.', 'Trực giác thuộc ý thức, logic thuộc vô thức.', 'Cả hai đều cần cảm xúc cân bằng.', 'Cả hai đều thuộc về vỏ đại não.'], correct: 'Tư duy logic thuộc ý thức, trực giác thuộc vô thức và không có sự giải thích logic.', slide: 'Slide 16, 71', explanation: 'Trực giác là kinh nghiệm tri giác thuộc vô thức, không có sự giải thích mang tính logic hoặc rõ ràng minh bạch.' },
+            { id: 56, level: 'Vận dụng', question: 'Theo Quy luật Chuyển từ hưng phấn sang ức chế, sau khi làm việc căng thẳng, xung năng luôn có xu hướng nào?', options: ['Lan tỏa hưng phấn thành nhiều hưng phấn để duy trì sự tỉnh táo.', 'Chuyển sang trạng thái ức chế hoàn toàn sau khi đạt trạng thái cân bằng.', 'Tập trung ở các trung khu thần kinh tiêu biểu nhất.', 'Quay trở lại hưng phấn ngay lập tức.'], correct: 'Chuyển sang trạng thái ức chế hoàn toàn sau khi đạt trạng thái cân bằng.', slide: 'Slide 59', explanation: 'Xung năng có xu hướng phân tán hưng phấn lan tỏa để dẫn đến cân bằng, sau đó chuyển sang ức chế hoàn toàn.' },
+            { id: 57, level: 'Vận dụng', question: 'Trí nhớ, hiểu ngôn ngữ, biểu tượng, chữ viết và biểu lộ cảm xúc là chức năng chính của thùy nào?', options: ['Thùy Trán', 'Thùy Đỉnh', 'Thùy Thái dương', 'Thùy Chẩm'], correct: 'Thùy Thái dương', slide: 'Slide 17', explanation: 'Thùy thái dương chịu trách nhiệm về Trí nhớ, hiểu ngôn ngữ, biểu tượng, chữ viết và đặc biệt là biểu lộ cảm xúc (kết nối với các thành phần của não giữa).' },
+            { id: 58, level: 'Vận dụng', question: 'Trong luyện tập kỹ năng tư duy giải quyết vấn đề, sau khi xác định vấn đề, bạn cần xác định những yếu tố nào?', options: ['Phương pháp thực hiện, Nguồn lực cần thiết, Dự đoán rủi ro và hệ quả.', 'Chỉ tư duy logic và phản biện.', 'Chỉ thời điểm bắt đầu và kết thúc.', 'Chỉ nguồn lực tài chính.'], correct: 'Phương pháp thực hiện, Nguồn lực cần thiết, Dự đoán rủi ro và hệ quả.', slide: 'Slide 69', explanation: 'Các bước cần xác định bao gồm Phương pháp thực hiện, Nguồn lực (nhân lực, công cụ, tài chính) và Dự đoán các yếu tố rủi ro và hệ quả.' },
+            { id: 59, level: 'Vận dụng cao', question: 'Sự bất thường về tâm lý hoặc bệnh lý tâm thần là hệ quả của điều gì, bên cạnh sự thương tổn thực thể của hệ thần kinh?', options: ['Hoạt động xã hội không phong phú.', 'Sự rối loạn chức năng dẫn truyền thông tin của hệ thần kinh.', 'Sự thiếu hụt năng lượng vật lý.', 'Sự hoạt động độc lập của các vùng tế bào thần kinh.'], correct: 'Sự rối loạn chức năng dẫn truyền thông tin của hệ thần kinh.', slide: 'Slide 75', explanation: 'Bất thường tâm lý/bệnh lý tâm thần có nguyên nhân từ sự thương tổn thực thể hay rối loạn chức năng dẫn truyền thông tin.' },
+            { id: 60, level: 'Vận dụng', question: 'Việc đo nhịp tim, mạch đập, hơi thở trong các phản ứng tâm lý (ví dụ: lo lắng, sợ hãi) liên quan đến sự gia tăng chất nào?', options: ['Serotonine và GABA.', 'Endorphine và Oxytocine.', 'Arenaline và Dopamine.', 'Acetyl Choline và Glycine.'], correct: 'Arenaline và Dopamine.', slide: 'Slide 73', explanation: 'Hệ giao cảm (ảnh hưởng nhịp tim, hơi thở) trong phản ứng thường liên quan đến sự gia tăng Adrenaline (Arenaline) và Dopamine.' },
+        ];
+
+        // --- 2. CÁC HÀM XỬ LÝ CHUNG ---
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function getRandomSamples(arr, num) {
+            const shuffled = [...arr];
+            shuffleArray(shuffled);
+            return shuffled.slice(0, num);
+        }
+
+        // Hàm tạo nội dung HTML cho một câu hỏi
+        function renderQuestion(q, index) {
+            const currentOptions = [...q.options];
+            shuffleArray(currentOptions);
+
+            const radioName = `q_${q.id}_instance_${Date.now()}`; 
+            
+            let optionsHtml = '<div class="options-list">';
+            currentOptions.forEach((option, i) => {
+                const optionValue = String.fromCharCode(65 + i);
+                optionsHtml += `<label><input type="radio" name="${radioName}" value="${option}" data-letter="${optionValue}"> ${optionValue}. ${option}</label>`;
+            });
+            optionsHtml += '</div>';
+
+            const instanceId = `q_${q.id}_display_${index}`;
+
+            return `
+                <div id="${instanceId}" class="question-card" 
+                     data-correct-answer="${q.correct}" 
+                     data-level="${q.level}"
+                     data-slide="${q.slide}" 
+                     data-explanation="${q.explanation}">
+                    <p>Câu ${index + 1} (${q.level}): ${q.question}</p>
+                    ${optionsHtml}
+                    <button class="check-btn" onclick="checkAnswer('${instanceId}', '${radioName}')">Kiểm tra</button>
+                    <div id="${instanceId}_result" class="result-message"></div>
+                </div>
+            `;
+        }
+
+        // --- 3. HÀM TẠO ĐỀ THI NGẪU NHIÊN CÓ PHÂN LỚP ---
+
+        function generateNewQuiz() {
+            // 1. Phân loại câu hỏi theo mức độ
+            const levelMap = {
+                'Nhận biết': questionBank.filter(q => q.level === 'Nhận biết'),
+                'Thông hiểu': questionBank.filter(q => q.level === 'Thông hiểu'),
+                'Vận dụng': questionBank.filter(q => q.level.includes('Vận dụng')) 
+            };
+            
+            // 2. Tỷ lệ phân lớp (Tổng 20 câu)
+            const requiredCounts = {
+                'Nhận biết': 6,
+                'Thông hiểu': 8,
+                'Vận dụng': 6 
+            };
+
+            let selectedQuestions = [];
+
+            // 3. Lấy mẫu có phân lớp (Stratified Sampling)
+            for (const level in requiredCounts) {
+                const count = requiredCounts[level];
+                let questionsForLevel = levelMap[level];
+                
+                let samples = getRandomSamples(questionsForLevel, count);
+                selectedQuestions.push(...samples);
+            }
+
+            // 4. Xáo trộn toàn bộ câu hỏi trong đề mới
+            shuffleArray(selectedQuestions);
+            
+            // 5. Xây dựng nội dung HTML
+            let quizHtml = '';
+            selectedQuestions.forEach((q, index) => {
+                quizHtml += renderQuestion(q, index);
+            });
+
+            // 6. Tạo Mã đề ngẫu nhiên
+            const maDe = 'MD-' + new Date().getTime().toString().slice(-8);
+            document.getElementById('ma-de-info').textContent = `Mã đề: ${maDe} (Ngân hàng: ${questionBank.length} câu)`;
+            document.getElementById('quiz-content').innerHTML = quizHtml;
+        }
+
+        // --- 4. HÀM KIỂM TRA ĐÁP ÁN VÀ HIỆU ỨNG (FIXED) ---
+
+        function checkAnswer(questionInstanceId, radioName) {
+            const questionDiv = document.getElementById(questionInstanceId);
+            const resultDiv = document.getElementById(`${questionInstanceId}_result`);
+            
+            // Lấy đáp án đã chọn dựa trên tên radioName được truyền vào
+            const selectedOption = document.querySelector(`input[name="${radioName}"]:checked`);
+            
+            const dataCorrectAnswer = questionDiv.getAttribute('data-correct-answer').trim();
+            const slideInfo = questionDiv.getAttribute('data-slide');
+            const explanationText = questionDiv.getAttribute('data-explanation');
+
+            if (!selectedOption) {
+                alert("Vui lòng chọn một đáp án.");
+                return;
+            }
+
+            // 1. Lấy nội dung của đáp án đã chọn
+            const selectedAnswerContent = selectedOption.parentNode.textContent.substring(3).trim();
+
+            const isCorrect = selectedAnswerContent === dataCorrectAnswer;
+
+            // Reset màu nền của tất cả các đáp án và xóa giải thích cũ
+            const labels = questionDiv.querySelectorAll('.options-list label');
+            labels.forEach(label => {
+                label.style.backgroundColor = '';
+            });
+
+            const existingExplanation = questionDiv.querySelector('.explanation');
+            if (existingExplanation) {
+                existingExplanation.remove();
+            }
+
+            // 2. TÌM ĐÁP ÁN ĐÚNG VÀ CHỮ CÁI TƯƠNG ỨNG
+            let correctOptionLabel = null;
+            let correctLetter = '';
+            for (let i = 0; i < labels.length; i++) {
+                const labelText = labels[i].textContent.substring(3).trim();
+                if (labelText === dataCorrectAnswer) {
+                    correctOptionLabel = labels[i];
+                    correctLetter = labels[i].querySelector('input').getAttribute('data-letter');
+                    break;
+                }
+            }
+            
+            resultDiv.style.display = 'block';
+
+            if (isCorrect) {
+                // HIỆU ỨNG ĐÚNG: Màu xanh lá, biểu cảm chúc mừng, pháo hoa 8s
+                resultDiv.className = 'result-message correct';
+                resultDiv.innerHTML = `**CHÍNH XÁC!** 🎉 Tuyệt vời, kiến thức vững vàng!`;
+
+                // Đổi màu đáp án đúng
+                selectedOption.parentNode.style.backgroundColor = '#a7e4a7'; 
+
+                // Kích hoạt pháo hoa (8 giây)
+                const duration = 8 * 1000;
+                const end = Date.now() + duration;
+
+                (function frame() {
+                    confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, });
+                    confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, });
+                    if (Date.now() < end) {
+                        requestAnimationFrame(frame);
+                    }
+                }());
+
+            } else {
+                // HIỆU ỨNG SAI: Màu đỏ, giơ bảng chê (biểu cảm), giải thích chi tiết
+                resultDiv.className = 'result-message incorrect';
+                resultDiv.innerHTML = `**CHƯA CHÍNH XÁC.** 👎 Đáng tiếc quá! Đáp án đúng là **${correctLetter}**.`; 
+                
+                // Đổi màu đáp án sai đã chọn
+                selectedOption.parentNode.style.backgroundColor = '#f7c4c4';
+                
+                const explanation = document.createElement('div');
+                explanation.className = 'explanation';
+                explanation.style.display = 'block';
+                explanation.innerHTML = `**Giải thích chi tiết:** ${explanationText}<br>**(Nguồn: ${slideInfo})**`;
+                
+                questionDiv.appendChild(explanation);
+
+                // Tìm và tô màu đáp án đúng (màu xanh nhạt)
+                if (correctOptionLabel) {
+                    correctOptionLabel.style.backgroundColor = '#c8e6c9'; 
+                }
+            }
+        }
+        
+        // Tự động tạo đề khi trang web được tải lần đầu
+        window.onload = () => {
+            generateNewQuiz(); 
+        };
+    </script>
+</body>
+</html>
